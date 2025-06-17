@@ -1,62 +1,122 @@
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { usePriceArea } from "@/hooks/usePriceArea";
+import { ThemeMode, useThemeMode } from "@/hooks/useThemeMode";
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
-import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
-import { useElområde } from "@/hooks/useElområde";
 
-type ElområdeOption = {
+type PriceAreaOption = {
   value: string;
   label: string;
-  description: string;
 };
 
-const ELOMRÅDEN: ElområdeOption[] = [
-  { value: "SE1", label: "SE1 - Norra Sverige", description: "Luleå" },
+type ThemeOption = {
+  value: ThemeMode;
+  label: string;
+};
+
+const PRICE_AREAS: PriceAreaOption[] = [
+  { value: "SE1", label: "SE1 - Norra Sverige" },
   {
     value: "SE2",
     label: "SE2 - Norra Mellansverige",
-    description: "Sundsvall",
   },
   {
     value: "SE3",
     label: "SE3 - Södra Mellansverige",
-    description: "Stockholm",
   },
-  { value: "SE4", label: "SE4 - Södra Sverige", description: "Malmö" },
+  { value: "SE4", label: "SE4 - Södra Sverige" },
 ];
 
-const STORAGE_KEY = "selected_elområde";
+const THEME_OPTIONS: ThemeOption[] = [
+  {
+    value: "system",
+    label: "Enligt enhetens inställningar",
+  },
+  {
+    value: "light",
+    label: "Ljust läge",
+  },
+  {
+    value: "dark",
+    label: "Mörkt läge",
+  },
+];
 
 export default function SettingsScreen() {
-  const { selectedArea, setSelectedArea } = useElområde();
-
+  const { selectedArea, setSelectedArea } = usePriceArea();
+  const { themeMode, setThemeMode, isLoading: themeLoading } = useThemeMode();
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        Inställningar
-      </ThemedText>
+      <ThemedText type="title">Inställningar</ThemedText>
 
+      {/* Elprisområde sektion */}
       <ThemedView style={styles.section}>
         <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Välj elprisområde
+          Elprisområde
         </ThemedText>
-        {ELOMRÅDEN.map((område) => (
+        {PRICE_AREAS.map((area) => (
           <TouchableOpacity
-            key={område.value}
+            key={area.value}
             style={[
               styles.option,
-              selectedArea === område.value && styles.selectedOption,
+              selectedArea === area.value && styles.selectedOption,
             ]}
-            onPress={() => setSelectedArea(område.value)}
+            onPress={() => setSelectedArea(area.value)}
           >
             <ThemedView style={styles.optionContent}>
-              <ThemedText style={styles.optionLabel}>{område.label}</ThemedText>
-              <ThemedText style={styles.optionDescription}>
-                {område.description}
+              <ThemedText
+                style={[
+                  styles.optionLabel,
+                  selectedArea === area.value && styles.selectedOptionLabel,
+                ]}
+              >
+                {area.label}
               </ThemedText>
             </ThemedView>
-            {selectedArea === område.value && (
-              <ThemedText style={styles.checkmark}>✓</ThemedText>
+            {selectedArea === area.value && (
+              <IconSymbol
+                name="checkmark.circle.fill"
+                size={24}
+                color="#6750A4"
+              />
+            )}
+          </TouchableOpacity>
+        ))}
+      </ThemedView>
+
+      {/* Tema sektion */}
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          Utseende
+        </ThemedText>
+        {THEME_OPTIONS.map((option) => (
+          <TouchableOpacity
+            key={option.value}
+            style={[
+              styles.option,
+              themeMode === option.value && styles.selectedOption,
+            ]}
+            onPress={() => setThemeMode(option.value)}
+            disabled={themeLoading}
+          >
+            <ThemedView style={styles.optionContent}>
+              <ThemedText
+                style={[
+                  styles.optionLabel,
+                  themeMode === option.value && styles.selectedOptionLabel,
+                ]}
+              >
+                {option.label}
+              </ThemedText>
+            </ThemedView>
+            {themeMode === option.value && (
+              <IconSymbol
+                name="checkmark.circle.fill"
+                size={24}
+                color="#6750A4"
+              />
             )}
           </TouchableOpacity>
         ))}
@@ -71,9 +131,6 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
   },
-  title: {
-    marginBottom: 30,
-  },
   section: {
     marginBottom: 30,
   },
@@ -84,32 +141,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    marginVertical: 5,
-    borderRadius: 10,
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 5,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "rgba(0, 0, 0, 0.12)",
+
+    shadowOpacity: 0.05,
+    shadowRadius: 1,
   },
   selectedOption: {
-    borderColor: "#007AFF",
-    backgroundColor: "#E6F3FF",
+    borderColor: "#6750A4", // Material Purple Primary
+    backgroundColor: "rgba(103, 80, 164, 0.08)", // Material Purple with low opacity
+
+    transform: [{ scale: 1.02 }],
   },
   optionContent: {
     flex: 1,
   },
   optionLabel: {
     fontSize: 16,
-    fontWeight: "600",
   },
-  optionDescription: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginTop: 2,
-  },
-  checkmark: {
-    fontSize: 18,
-    color: "#007AFF",
-    fontWeight: "bold",
+  selectedOptionLabel: {
+    color: "#6750A4", // Material Purple Primary
+    backgroundColor: "rgba(103, 80, 164, 0.08)", // Material Purple with low opacity
   },
 });

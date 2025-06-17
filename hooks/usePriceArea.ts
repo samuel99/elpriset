@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 
-const STORAGE_KEY = "selected_elområde";
+const STORAGE_KEY = "selected_price_area";
 const DEFAULT_AREA = "SE3";
 
 // Global state to share between all instances
@@ -15,7 +15,7 @@ const notifySubscribers = (newArea: string) => {
   subscribers.forEach((callback) => callback(newArea));
 };
 
-export function useElområde() {
+export function usePriceArea() {
   const [selectedArea, setSelectedArea] = useState<string>(globalSelectedArea);
   const [isLoading, setIsLoading] = useState(globalIsLoading);
 
@@ -39,6 +39,7 @@ export function useElområde() {
       subscribers = subscribers.filter((sub) => sub !== unsubscribe);
     };
   }, []);
+
   const loadSelectedArea = async () => {
     try {
       const saved = await AsyncStorage.getItem(STORAGE_KEY);
@@ -58,6 +59,7 @@ export function useElområde() {
       setIsLoading(false);
     }
   };
+
   const saveSelectedArea = async (area: string) => {
     try {
       await AsyncStorage.setItem(STORAGE_KEY, area);
