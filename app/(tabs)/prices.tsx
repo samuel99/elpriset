@@ -43,17 +43,6 @@ export default function PricesScreen() {
     return names[area] || area;
   };
 
-  const isCurrentHour = (timeStart: string) => {
-    const now = new Date();
-    const itemTime = new Date(timeStart);
-    return (
-      now.getHours() === itemTime.getHours() &&
-      now.getDate() === itemTime.getDate() &&
-      now.getMonth() === itemTime.getMonth() &&
-      now.getFullYear() === itemTime.getFullYear()
-    );
-  };
-
   if (areaLoading) {
     return (
       <ThemedView style={styles.container}>
@@ -87,26 +76,16 @@ export default function PricesScreen() {
       <FlatList
         data={prices}
         keyExtractor={(item, index) => item?.time_start || index.toString()}
-        renderItem={({ item }) => {
-          const isCurrent = isCurrentHour(item.time_start);
-          return (
-            <ThemedView
-              style={[styles.row, isCurrent && styles.currentHourRow]}
-            >
-              <ThemedText
-                style={[styles.cell, isCurrent && styles.currentHourText]}
-              >
-                {new Date(item.time_start).getHours()}:00
-                {isCurrent && " 🕐"}
-              </ThemedText>
-              <ThemedText
-                style={[styles.cell, isCurrent && styles.currentHourText]}
-              >
-                {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
-              </ThemedText>
-            </ThemedView>
-          );
-        }}
+        renderItem={({ item }) => (
+          <ThemedView style={styles.row}>
+            <ThemedText style={styles.cell}>
+              {new Date(item.time_start).getHours()}:00
+            </ThemedText>
+            <ThemedText style={styles.cell}>
+              {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
+            </ThemedText>
+          </ThemedView>
+        )}
       />
     </ThemedView>
   );
@@ -133,17 +112,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
   },
-  currentHourRow: {
-    backgroundColor: "#E6F3FF",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    borderWidth: 2,
-    borderColor: "#007AFF",
-  },
   cell: { fontSize: 16 },
-  currentHourText: {
-    fontWeight: "bold",
-    color: "#007AFF",
-  },
   errorText: { fontSize: 16 },
 });
