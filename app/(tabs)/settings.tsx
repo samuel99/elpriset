@@ -4,7 +4,12 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { usePriceArea } from "@/hooks/usePriceArea";
 import { ThemeMode, useThemeMode } from "@/hooks/useThemeMode";
 import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Linking,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 
 type PriceAreaOption = {
   value: string;
@@ -48,7 +53,7 @@ export default function SettingsScreen() {
   const { selectedArea, setSelectedArea } = usePriceArea();
   const { themeMode, setThemeMode, isLoading: themeLoading } = useThemeMode();
   return (
-    <ThemedView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <ThemedText type="title">Inställningar</ThemedText>
 
       {/* Elprisområde sektion */}
@@ -121,7 +126,24 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         ))}
       </ThemedView>
-    </ThemedView>
+
+      <ThemedView style={styles.section}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          Tack till
+        </ThemedText>
+        <ThemedView>
+          <ThemedText>
+            Elpriser tillhandahålls av{" "}
+            <ThemedText
+              style={styles.link}
+              onPress={() => Linking.openURL("https://www.elprisetjustnu.se")}
+            >
+              Elprisetjustnu.se{" "}
+            </ThemedText>{" "}
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
@@ -130,7 +152,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
+    paddingBottom: 20,
   },
+
   section: {
     marginBottom: 30,
   },
@@ -166,5 +190,10 @@ const styles = StyleSheet.create({
   selectedOptionLabel: {
     color: "#6750A4", // Material Purple Primary
     backgroundColor: "rgba(103, 80, 164, 0.08)", // Material Purple with low opacity
+  },
+  link: {
+    textDecorationStyle: "solid",
+    textDecorationLine: "underline",
+    color: "#6750A4", // Match the link color from ThemedText
   },
 });

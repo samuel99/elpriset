@@ -74,6 +74,7 @@ export default function PricesScreen() {
   const isCurrentHour = (timeStart: string) => {
     const now = new Date();
     const priceTime = new Date(timeStart);
+
     return (
       priceTime.getDate() === now.getDate() &&
       priceTime.getMonth() === now.getMonth() &&
@@ -93,6 +94,14 @@ export default function PricesScreen() {
     } else {
       return [styles.row, styles.oddRow];
     }
+  };
+
+  const getTextStyle = (timeStart: string) => {
+    const isCurrentHourTime = isCurrentHour(timeStart);
+    if (isCurrentHourTime) {
+      return [styles.cell, styles.currentHourText];
+    }
+    return styles.cell;
   };
   if (areaLoading || loading) {
     return (
@@ -123,10 +132,10 @@ export default function PricesScreen() {
         }
         renderItem={({ item, index }) => (
           <ThemedView style={getRowStyle(index, item.time_start)}>
-            <ThemedText style={styles.cell}>
+            <ThemedText style={getTextStyle(item.time_start)}>
               {formatTime(item.time_start)}
             </ThemedText>
-            <ThemedText style={styles.cell}>
+            <ThemedText style={getTextStyle(item.time_start)}>
               {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
             </ThemedText>
           </ThemedView>
@@ -153,10 +162,10 @@ export default function PricesScreen() {
           }
           renderItem={({ item, index }) => (
             <ThemedView style={getRowStyle(index, item.time_start)}>
-              <ThemedText style={styles.cell}>
+              <ThemedText style={getTextStyle(item.time_start)}>
                 {formatTime(item.time_start)}
               </ThemedText>
-              <ThemedText style={styles.cell}>
+              <ThemedText style={getTextStyle(item.time_start)}>
                 {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
               </ThemedText>
             </ThemedView>
@@ -166,7 +175,7 @@ export default function PricesScreen() {
       ) : (
         <ThemedView style={styles.messageContainer}>
           <ThemedText style={styles.messageText}>
-            Morgondagens priser publiceras klockan 14.
+            Morgondagens elpriser publiceras 14:00
           </ThemedText>
         </ThemedView>
       )}
@@ -175,10 +184,18 @@ export default function PricesScreen() {
 }
 
 async function fetchPrices(area: string): Promise<PriceEntry[]> {
-  const dateObj = new Date();
-  const year = dateObj.getFullYear();
-  const monthDay = dateObj.toISOString().split("T")[0].slice(5); // "MM-DD"
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${year}/${monthDay}_${area}.json`;
+  // Använd lokalt datum istället för UTC
+  const now = new Date();
+  const localDateStr =
+    now.getFullYear() +
+    "-" +
+    String(now.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(now.getDate()).padStart(2, "0");
+
+  const url = `https://www.elprisetjustnu.se/api/v1/prices/${now.getFullYear()}/${localDateStr.slice(
+    5
+  )}_${area}.json`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -188,11 +205,21 @@ async function fetchPrices(area: string): Promise<PriceEntry[]> {
 }
 
 async function fetchTomorrowPrices(area: string): Promise<PriceEntry[]> {
-  const dateObj = new Date();
-  dateObj.setDate(dateObj.getDate() + 1); // Morgondagens datum
-  const year = dateObj.getFullYear();
-  const monthDay = dateObj.toISOString().split("T")[0].slice(5); // "MM-DD"
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${year}/${monthDay}_${area}.json`;
+  // Använd lokalt datum och lägg till 1 dag
+  const now = new Date();
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+
+  const tomorrowDateStr =
+    tomorrow.getFullYear() +
+    "-" +
+    String(tomorrow.getMonth() + 1).padStart(2, "0") +
+    "-" +
+    String(tomorrow.getDate()).padStart(2, "0");
+
+  const url = `https://www.elprisetjustnu.se/api/v1/prices/${tomorrow.getFullYear()}/${tomorrowDateStr.slice(
+    5
+  )}_${area}.json`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -222,6 +249,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#6750A4", // Subtil blå för aktuell timme
     borderRadius: 6,
   },
+  currentHourText: {
+    color: "#FFFFFF", // Vit text för aktuell timme
+  },
   cell: { fontSize: 16 },
   loadingContainer: {
     flexDirection: "row",
@@ -229,12 +259,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   messageContainer: {
-    paddingVertical: 15,
-    alignItems: "center",
+    backgroundColor: "transparent",
   },
   messageText: {
     fontSize: 16,
     fontStyle: "italic",
-    textAlign: "center",
+    marginBottom: 100,
   },
 });
