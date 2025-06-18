@@ -37,15 +37,15 @@ const PRICE_AREAS: PriceAreaOption[] = [
 const THEME_OPTIONS: ThemeOption[] = [
   {
     value: "system",
-    label: "Enligt enhetens inställningar",
+    label: "System",
   },
   {
     value: "light",
-    label: "Ljust läge",
+    label: "Ljust",
   },
   {
     value: "dark",
-    label: "Mörkt läge",
+    label: "Mörkt",
   },
 ];
 

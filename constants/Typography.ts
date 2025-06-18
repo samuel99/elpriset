@@ -5,7 +5,7 @@ export const Typography = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold" as const,
     lineHeight: 32,
-    marginBlock: 24,
+    marginBlock: 16,
   },
   subtitle: {
     fontSize: 18,

@@ -31,8 +31,9 @@ export default function PricesScreen() {
       setTomorrowLoading(true);
       setError(null);
       setTomorrowError(null);
+
       // Hämta dagens priser
-      fetchPrices(selectedArea)
+      fetchPricesForDate(selectedArea)
         .then((data) => {
           setPrices(data);
           setLoading(false);
@@ -43,7 +44,7 @@ export default function PricesScreen() {
         });
 
       // Hämta morgondagens priser
-      fetchTomorrowPrices(selectedArea)
+      fetchPricesForDate(selectedArea, 1)
         .then((data: PriceEntry[]) => {
           setTomorrowPrices(data);
           setTomorrowLoading(false);
@@ -69,6 +70,13 @@ export default function PricesScreen() {
   const formatTime = (timeStart: string) => {
     const hour = new Date(timeStart).getHours();
     return `${hour.toString().padStart(2, "0")}:00`;
+  };
+
+  const formatPrice = (pricePerKWh: number) => {
+    return (pricePerKWh * 100).toLocaleString("sv-SE", {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
   };
 
   const isCurrentHour = (timeStart: string) => {
@@ -142,11 +150,7 @@ export default function PricesScreen() {
                 {formatTime(item.time_start)}
               </ThemedText>
               <ThemedText style={getTextStyle(item.time_start)}>
-                {(item.SEK_per_kWh * 100).toLocaleString("sv-SE", {
-                  minimumFractionDigits: 1,
-                  maximumFractionDigits: 1,
-                })}{" "}
-                öre/kWh
+                {formatPrice(item.SEK_per_kWh)} öre/kWh
               </ThemedText>
             </ThemedView>
           )}
@@ -176,11 +180,7 @@ export default function PricesScreen() {
                   {formatTime(item.time_start)}
                 </ThemedText>
                 <ThemedText style={getTextStyle(item.time_start)}>
-                  {(item.SEK_per_kWh * 100).toLocaleString("sv-SE", {
-                    minimumFractionDigits: 1,
-                    maximumFractionDigits: 1,
-                  })}{" "}
-                  öre/kWh
+                  {formatPrice(item.SEK_per_kWh)} öre/kWh
                 </ThemedText>
               </ThemedView>
             )}
@@ -198,41 +198,22 @@ export default function PricesScreen() {
   );
 }
 
-async function fetchPrices(area: string): Promise<PriceEntry[]> {
-  // Använd lokalt datum istället för UTC
+async function fetchPricesForDate(
+  area: string,
+  daysOffset: number = 0
+): Promise<PriceEntry[]> {
   const now = new Date();
-  const localDateStr =
-    now.getFullYear() +
+  const targetDate = new Date(now);
+  targetDate.setDate(now.getDate() + daysOffset);
+
+  const dateStr =
+    targetDate.getFullYear() +
     "-" +
-    String(now.getMonth() + 1).padStart(2, "0") +
+    String(targetDate.getMonth() + 1).padStart(2, "0") +
     "-" +
-    String(now.getDate()).padStart(2, "0");
+    String(targetDate.getDate()).padStart(2, "0");
 
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${now.getFullYear()}/${localDateStr.slice(
-    5
-  )}_${area}.json`;
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return await response.json();
-}
-
-async function fetchTomorrowPrices(area: string): Promise<PriceEntry[]> {
-  // Använd lokalt datum och lägg till 1 dag
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(now.getDate() + 1);
-
-  const tomorrowDateStr =
-    tomorrow.getFullYear() +
-    "-" +
-    String(tomorrow.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(tomorrow.getDate()).padStart(2, "0");
-
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${tomorrow.getFullYear()}/${tomorrowDateStr.slice(
+  const url = `https://www.elprisetjustnu.se/api/v1/prices/${targetDate.getFullYear()}/${dateStr.slice(
     5
   )}_${area}.json`;
 
@@ -255,17 +236,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   evenRow: {
-    backgroundColor: "rgba(128, 128, 128, 0.1)", // Mycket subtil grå
+    backgroundColor: "rgba(128, 128, 128, 0.1)",
   },
   oddRow: {
     backgroundColor: "transparent",
   },
   currentHourRow: {
-    backgroundColor: "#6750A4", // Subtil blå för aktuell timme
+    backgroundColor: "#6750A4",
     borderRadius: 6,
   },
   currentHourText: {
-    color: "#FFFFFF", // Vit text för aktuell timme
+    color: "#FFFFFF",
   },
   cell: { fontSize: 16 },
   loadingContainer: {

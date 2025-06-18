@@ -14,6 +14,9 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
+        tabBarIconStyle: {
+          marginTop: 6, // Flytta ikoner nedåt för bättre centrering
+        },
         tabBarStyle: Platform.select({
           ios: {
             position: "absolute",
@@ -27,7 +30,11 @@ export default function TabLayout() {
         options={{
           title: "Priser",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <IconSymbol
+              size={28}
+              name="chart.line.uptrend.xyaxis"
+              color={color}
+            />
           ),
         }}
       />
