@@ -36,12 +36,11 @@ export const Typography = StyleSheet.create({
   },
 });
 
-// Färger för typografi (kan utökas)
 export const TypographyColors = {
   primary: "#000000",
   secondary: "#666666",
   disabled: "#999999",
-  accent: "#6750A4", // Material Design primary
+  accent: "#6750A4",
   error: "#B3261E",
   success: "#4CAF50",
   warning: "#FF9800",

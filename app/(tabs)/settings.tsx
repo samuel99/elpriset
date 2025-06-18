@@ -53,94 +53,109 @@ export default function SettingsScreen() {
   const { selectedArea, setSelectedArea } = usePriceArea();
   const { themeMode, setThemeMode, isLoading: themeLoading } = useThemeMode();
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <ThemedText type="title">Inställningar</ThemedText>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <ThemedView style={styles.container}>
+        <ThemedText type="title">Inställningar</ThemedText>
 
-      {/* Elprisområde sektion */}
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Elprisområde
-        </ThemedText>
-        {PRICE_AREAS.map((area) => (
-          <TouchableOpacity
-            key={area.value}
-            style={[
-              styles.option,
-              selectedArea === area.value && styles.selectedOption,
-            ]}
-            onPress={() => setSelectedArea(area.value)}
-          >
-            <ThemedView style={styles.optionContent}>
-              <ThemedText
-                style={[
-                  styles.optionLabel,
-                  selectedArea === area.value && styles.selectedOptionLabel,
-                ]}
-              >
-                {area.label}
-              </ThemedText>
-            </ThemedView>
-            {selectedArea === area.value && (
-              <IconSymbol
-                name="checkmark.circle.fill"
-                size={24}
-                color="#6750A4"
-              />
-            )}
-          </TouchableOpacity>
-        ))}
-      </ThemedView>
-
-      {/* Tema sektion */}
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Utseende
-        </ThemedText>
-        {THEME_OPTIONS.map((option) => (
-          <TouchableOpacity
-            key={option.value}
-            style={[
-              styles.option,
-              themeMode === option.value && styles.selectedOption,
-            ]}
-            onPress={() => setThemeMode(option.value)}
-            disabled={themeLoading}
-          >
-            <ThemedView style={styles.optionContent}>
-              <ThemedText
-                style={[
-                  styles.optionLabel,
-                  themeMode === option.value && styles.selectedOptionLabel,
-                ]}
-              >
-                {option.label}
-              </ThemedText>
-            </ThemedView>
-            {themeMode === option.value && (
-              <IconSymbol
-                name="checkmark.circle.fill"
-                size={24}
-                color="#6750A4"
-              />
-            )}
-          </TouchableOpacity>
-        ))}
-      </ThemedView>
-
-      <ThemedView style={styles.section}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Tack till
-        </ThemedText>
-        <ThemedView>
-          <ThemedText>
-            Elpriser tillhandahålls av{" "}
-            <ThemedText
-              style={styles.link}
-              onPress={() => Linking.openURL("https://www.elprisetjustnu.se")}
-            >
-              Elprisetjustnu.se{" "}
-            </ThemedText>{" "}
+        {/* Elprisområde sektion */}
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Elprisområde
           </ThemedText>
+          {PRICE_AREAS.map((area) => (
+            <TouchableOpacity
+              key={area.value}
+              style={[
+                styles.option,
+                selectedArea === area.value && styles.selectedOption,
+              ]}
+              onPress={() => setSelectedArea(area.value)}
+            >
+              <ThemedView style={styles.optionContent}>
+                <ThemedText
+                  style={[
+                    styles.optionLabel,
+                    selectedArea === area.value && styles.selectedOptionLabel,
+                  ]}
+                >
+                  {area.label}
+                </ThemedText>
+              </ThemedView>
+              {selectedArea === area.value && (
+                <IconSymbol
+                  name="checkmark.circle.fill"
+                  size={24}
+                  color="#6750A4"
+                />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ThemedView>
+
+        {/* Tema sektion */}
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Utseende
+          </ThemedText>
+          {THEME_OPTIONS.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.option,
+                themeMode === option.value && styles.selectedOption,
+              ]}
+              onPress={() => setThemeMode(option.value)}
+              disabled={themeLoading}
+            >
+              <ThemedView style={styles.optionContent}>
+                <ThemedText
+                  style={[
+                    styles.optionLabel,
+                    themeMode === option.value && styles.selectedOptionLabel,
+                  ]}
+                >
+                  {option.label}
+                </ThemedText>
+              </ThemedView>
+              {themeMode === option.value && (
+                <IconSymbol
+                  name="checkmark.circle.fill"
+                  size={24}
+                  color="#6750A4"
+                />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ThemedView>
+
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Tack till
+          </ThemedText>
+          <ThemedView>
+            <ThemedText>
+              Elpriser tillhandahålls av{" "}
+              <ThemedText
+                style={styles.link}
+                onPress={() =>
+                  Linking.openURL("https://www.elprisetjustnu.se/elpris-api")
+                }
+              >
+                Elprisetjustnu.se
+              </ThemedText>
+            </ThemedText>
+            <ThemedText>
+              Kod tillgänglig på{" "}
+              <ThemedText
+                style={styles.link}
+                onPress={() =>
+                  Linking.openURL("https://github.com/samuel99/elpriset")
+                }
+              >
+                GitHub
+              </ThemedText>
+            </ThemedText>
+          </ThemedView>
         </ThemedView>
       </ThemedView>
     </ScrollView>
@@ -178,8 +193,6 @@ const styles = StyleSheet.create({
   selectedOption: {
     borderColor: "#6750A4", // Material Purple Primary
     backgroundColor: "rgba(103, 80, 164, 0.08)", // Material Purple with low opacity
-
-    transform: [{ scale: 1.02 }],
   },
   optionContent: {
     flex: 1,

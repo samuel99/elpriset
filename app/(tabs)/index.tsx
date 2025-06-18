@@ -119,46 +119,19 @@ export default function PricesScreen() {
     );
   }
   return (
-    <ScrollView style={styles.container}>
-      <ThemedText type="title">Timpris {getAreaName(selectedArea)}</ThemedText>
+    <ScrollView showsVerticalScrollIndicator={false}>
+      <ThemedView style={styles.container}>
+        <ThemedText type="title">
+          Timpris {getAreaName(selectedArea)}
+        </ThemedText>
 
-      {/* Dagens priser */}
-      <ThemedText type="subtitle">Idag</ThemedText>
-      <FlatList
-        data={prices}
-        style={{ marginInline: -12 }}
-        keyExtractor={(item, index) =>
-          `today-${item?.time_start || index.toString()}`
-        }
-        renderItem={({ item, index }) => (
-          <ThemedView style={getRowStyle(index, item.time_start)}>
-            <ThemedText style={getTextStyle(item.time_start)}>
-              {formatTime(item.time_start)}
-            </ThemedText>
-            <ThemedText style={getTextStyle(item.time_start)}>
-              {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
-            </ThemedText>
-          </ThemedView>
-        )}
-        scrollEnabled={false}
-      />
-
-      {/* Morgondagens priser */}
-      <ThemedText type="subtitle" style={styles.tomorrowTitle}>
-        Imorgon
-      </ThemedText>
-
-      {tomorrowLoading ? (
-        <ThemedView style={styles.loadingContainer}>
-          <ActivityIndicator size="small" />
-          <ThemedText>Hämtar morgondagens priser...</ThemedText>
-        </ThemedView>
-      ) : tomorrowPrices.length > 0 ? (
+        {/* Dagens priser */}
+        <ThemedText type="subtitle">Idag</ThemedText>
         <FlatList
-          data={tomorrowPrices}
-          style={{ marginInline: -12, marginBottom: 100 }}
+          data={prices}
+          style={{ marginInline: -12 }}
           keyExtractor={(item, index) =>
-            `tomorrow-${item?.time_start || index.toString()}`
+            `today-${item?.time_start || index.toString()}`
           }
           renderItem={({ item, index }) => (
             <ThemedView style={getRowStyle(index, item.time_start)}>
@@ -172,13 +145,44 @@ export default function PricesScreen() {
           )}
           scrollEnabled={false}
         />
-      ) : (
-        <ThemedView style={styles.messageContainer}>
-          <ThemedText style={styles.messageText}>
-            Morgondagens elpriser publiceras 14:00
-          </ThemedText>
-        </ThemedView>
-      )}
+
+        {/* Morgondagens priser */}
+        <ThemedText type="subtitle" style={styles.tomorrowTitle}>
+          Imorgon
+        </ThemedText>
+
+        {tomorrowLoading ? (
+          <ThemedView style={styles.loadingContainer}>
+            <ActivityIndicator size="small" />
+            <ThemedText>Hämtar morgondagens priser...</ThemedText>
+          </ThemedView>
+        ) : tomorrowPrices.length > 0 ? (
+          <FlatList
+            data={tomorrowPrices}
+            style={{ marginInline: -12, marginBottom: 100 }}
+            keyExtractor={(item, index) =>
+              `tomorrow-${item?.time_start || index.toString()}`
+            }
+            renderItem={({ item, index }) => (
+              <ThemedView style={getRowStyle(index, item.time_start)}>
+                <ThemedText style={getTextStyle(item.time_start)}>
+                  {formatTime(item.time_start)}
+                </ThemedText>
+                <ThemedText style={getTextStyle(item.time_start)}>
+                  {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
+                </ThemedText>
+              </ThemedView>
+            )}
+            scrollEnabled={false}
+          />
+        ) : (
+          <ThemedView style={styles.messageContainer}>
+            <ThemedText style={styles.messageText}>
+              Morgondagens elpriser publiceras 14:00
+            </ThemedText>
+          </ThemedView>
+        )}
+      </ThemedView>
     </ScrollView>
   );
 }
