@@ -22,16 +22,16 @@ type ThemeOption = {
 };
 
 const PRICE_AREAS: PriceAreaOption[] = [
-  { value: "SE1", label: "SE1 - Norra Sverige" },
+  { value: "SE1", label: "SE1, Norra Sverige" },
   {
     value: "SE2",
-    label: "SE2 - Norra Mellansverige",
+    label: "SE2, Norra Mellansverige",
   },
   {
     value: "SE3",
-    label: "SE3 - Södra Mellansverige",
+    label: "SE3, Södra Mellansverige",
   },
-  { value: "SE4", label: "SE4 - Södra Sverige" },
+  { value: "SE4", label: "SE4, Södra Sverige" },
 ];
 
 const THEME_OPTIONS: ThemeOption[] = [
@@ -63,7 +63,7 @@ export default function SettingsScreen() {
         {/* Elprisområde sektion */}
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Elprisområde
+            Elprisområde:
           </ThemedText>
           {PRICE_AREAS.map((area) => (
             <TouchableOpacity
@@ -87,7 +87,7 @@ export default function SettingsScreen() {
               {selectedArea === area.value && (
                 <IconSymbol
                   name="checkmark.circle.fill"
-                  size={24}
+                  size={16}
                   color="#6750A4"
                 />
               )}
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
         {/* Tema sektion */}
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Utseende
+            Utseende:
           </ThemedText>
           {THEME_OPTIONS.map((option) => (
             <TouchableOpacity
@@ -123,7 +123,7 @@ export default function SettingsScreen() {
               {themeMode === option.value && (
                 <IconSymbol
                   name="checkmark.circle.fill"
-                  size={24}
+                  size={16}
                   color="#6750A4"
                 />
               )}
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginVertical: 6,
     borderRadius: 5,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: "rgba(0, 0, 0, 0.12)",
 
     shadowOpacity: 0.05,

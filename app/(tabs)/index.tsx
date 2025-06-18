@@ -133,7 +133,11 @@ export default function PricesScreen() {
     >
       <ThemedView style={styles.container}>
         <ThemedText type="title">
-          Timpris {getAreaName(selectedArea)}
+          Timpriset
+          <ThemedText type="titleLight">
+            {" "}
+            / {getAreaName(selectedArea)}
+          </ThemedText>
         </ThemedText>
 
         {/* Dagens priser */}
@@ -170,7 +174,7 @@ export default function PricesScreen() {
         ) : tomorrowPrices.length > 0 ? (
           <FlatList
             data={tomorrowPrices}
-            style={{ marginInline: -12, marginBottom: 100 }}
+            style={{ marginInline: -12, marginBottom: 10 }}
             keyExtractor={(item, index) =>
               `tomorrow-${item?.time_start || index.toString()}`
             }

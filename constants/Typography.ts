@@ -2,37 +2,27 @@ import { StyleSheet } from "react-native";
 
 export const Typography = StyleSheet.create({
   title: {
-    fontSize: 24,
-    fontWeight: "bold" as const,
+    fontSize: 28,
+    fontFamily: "Roboto_700Bold",
+    lineHeight: 32,
+    marginBlock: 16,
+  },
+  titleLight: {
+    fontSize: 28,
+    fontFamily: "Roboto_300Light",
     lineHeight: 32,
     marginBlock: 16,
   },
   subtitle: {
-    fontSize: 18,
-    fontWeight: "600" as const,
+    fontSize: 20,
+    fontFamily: "Roboto_500Medium",
     lineHeight: 24,
     marginBlock: 16,
   },
-
   body: {
-    fontSize: 14,
-    fontWeight: "400" as const,
+    fontSize: 16,
+    fontFamily: "Roboto_400Regular",
     lineHeight: 20,
-  },
-
-  // Särskilda stilar
-  caption: {
-    fontSize: 12,
-    fontWeight: "400" as const,
-    lineHeight: 16,
-    opacity: 0.7,
-  },
-  overline: {
-    fontSize: 10,
-    fontWeight: "500" as const,
-    lineHeight: 16,
-    letterSpacing: 1.5,
-    textTransform: "uppercase" as const,
   },
 });
 

@@ -8,9 +8,7 @@ export type ThemedTextProps = TextProps & {
   type?:
     | "default"
     | "title"
-    | "titleLarge"
-    | "titleMedium"
-    | "titleSmall"
+    | "titleLight"
     | "defaultSemiBold"
     | "subtitle"
     | "link";
@@ -31,6 +29,7 @@ export function ThemedText({
         { color },
         type === "default" ? Typography.body : undefined,
         type === "title" ? Typography.title : undefined,
+        type === "titleLight" ? Typography.titleLight : undefined,
         type === "subtitle" ? Typography.subtitle : undefined,
         type === "link" ? styles.link : undefined,
         style,
