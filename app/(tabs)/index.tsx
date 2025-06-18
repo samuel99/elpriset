@@ -119,7 +119,10 @@ export default function PricesScreen() {
     );
   }
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
       <ThemedView style={styles.container}>
         <ThemedText type="title">
           Timpris {getAreaName(selectedArea)}
@@ -139,7 +142,11 @@ export default function PricesScreen() {
                 {formatTime(item.time_start)}
               </ThemedText>
               <ThemedText style={getTextStyle(item.time_start)}>
-                {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
+                {(item.SEK_per_kWh * 100).toLocaleString("sv-SE", {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })}{" "}
+                öre/kWh
               </ThemedText>
             </ThemedView>
           )}
@@ -169,7 +176,11 @@ export default function PricesScreen() {
                   {formatTime(item.time_start)}
                 </ThemedText>
                 <ThemedText style={getTextStyle(item.time_start)}>
-                  {(item.SEK_per_kWh * 100).toFixed(1)} öre/kWh
+                  {(item.SEK_per_kWh * 100).toLocaleString("sv-SE", {
+                    minimumFractionDigits: 1,
+                    maximumFractionDigits: 1,
+                  })}{" "}
+                  öre/kWh
                 </ThemedText>
               </ThemedView>
             )}

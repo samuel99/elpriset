@@ -53,7 +53,10 @@ export default function SettingsScreen() {
   const { selectedArea, setSelectedArea } = usePriceArea();
   const { themeMode, setThemeMode, isLoading: themeLoading } = useThemeMode();
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ flexGrow: 1 }}
+    >
       <ThemedView style={styles.container}>
         <ThemedText type="title">Inställningar</ThemedText>
 
