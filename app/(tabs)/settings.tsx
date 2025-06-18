@@ -130,7 +130,7 @@ export default function SettingsScreen() {
 
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Tack till
+            Om
           </ThemedText>
           <ThemedView>
             <ThemedText>
@@ -143,8 +143,9 @@ export default function SettingsScreen() {
               >
                 Elprisetjustnu.se
               </ThemedText>
+              .
             </ThemedText>
-            <ThemedText>
+            <ThemedText style={{ marginBlock: 10 }}>
               Kod tillgänglig på{" "}
               <ThemedText
                 style={styles.link}
@@ -154,6 +155,7 @@ export default function SettingsScreen() {
               >
                 GitHub
               </ThemedText>
+              .
             </ThemedText>
           </ThemedView>
         </ThemedView>
