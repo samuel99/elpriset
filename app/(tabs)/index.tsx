@@ -1,5 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { getTheme } from "@/constants/Theme";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -9,7 +11,6 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-
 type PriceEntry = {
   SEK_per_kWh: number;
   EUR_per_kWh: number;
@@ -28,7 +29,8 @@ export default function PricesScreen() {
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
 
   const currentHourRef = useRef(new Date().getHours());
-
+  const colorScheme = useColorScheme();
+  const theme = getTheme(colorScheme);
   const updateData = () => {
     if (!areaLoading && selectedArea) {
       setLoading(true);
@@ -254,7 +256,7 @@ async function fetchPricesForDate(
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 50, paddingHorizontal: 20 },
+  container: { flex: 1, paddingHorizontal: 20 },
   tomorrowTitle: {
     marginTop: 30,
   },
