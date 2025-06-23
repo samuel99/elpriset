@@ -63,7 +63,7 @@ export default function SettingsScreen() {
         {/* Elprisområde sektion */}
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Elprisområde:
+            Elprisområde
           </ThemedText>
           {PRICE_AREAS.map((area) => (
             <TouchableOpacity
@@ -88,7 +88,7 @@ export default function SettingsScreen() {
                 <IconSymbol
                   name="checkmark.circle.fill"
                   size={16}
-                  color="#6750A4"
+                  color="#fff"
                 />
               )}
             </TouchableOpacity>
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
         {/* Tema sektion */}
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Utseende:
+            Utseende
           </ThemedText>
           {THEME_OPTIONS.map((option) => (
             <TouchableOpacity
@@ -124,7 +124,7 @@ export default function SettingsScreen() {
                 <IconSymbol
                   name="checkmark.circle.fill"
                   size={16}
-                  color="#6750A4"
+                  color="#fff"
                 />
               )}
             </TouchableOpacity>
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 16,
     marginVertical: 6,
-    borderRadius: 5,
+    borderRadius: 6,
     borderWidth: 2,
     borderColor: "rgba(0, 0, 0, 0.12)",
 
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   selectedOption: {
     borderColor: "#6750A4", // Material Purple Primary
-    backgroundColor: "rgba(103, 80, 164, 0.08)", // Material Purple with low opacity
+    backgroundColor: "#6750A4", // Material Purple with low opacity
   },
   optionContent: {
     flex: 1,
@@ -206,8 +206,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectedOptionLabel: {
-    color: "#6750A4", // Material Purple Primary
-    backgroundColor: "rgba(103, 80, 164, 0.08)", // Material Purple with low opacity
+    color: "#fff", // Material Purple Primary
+    backgroundColor: "#6750A4", // Material Purple with low opacity
   },
   link: {
     textDecorationStyle: "solid",

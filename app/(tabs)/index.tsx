@@ -1,9 +1,10 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { usePriceArea } from "@/hooks/usePriceArea";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  AppState,
   FlatList,
   ScrollView,
   StyleSheet,
@@ -25,14 +26,16 @@ export default function PricesScreen() {
   const [error, setError] = useState<string | null>(null);
   const [tomorrowError, setTomorrowError] = useState<string | null>(null);
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
-  useEffect(() => {
+
+  const currentHourRef = useRef(new Date().getHours());
+
+  const updateData = () => {
     if (!areaLoading && selectedArea) {
       setLoading(true);
       setTomorrowLoading(true);
       setError(null);
       setTomorrowError(null);
 
-      // Hämta dagens priser
       fetchPricesForDate(selectedArea)
         .then((data) => {
           setPrices(data);
@@ -43,7 +46,6 @@ export default function PricesScreen() {
           setLoading(false);
         });
 
-      // Hämta morgondagens priser
       fetchPricesForDate(selectedArea, 1)
         .then((data: PriceEntry[]) => {
           setTomorrowPrices(data);
@@ -56,6 +58,31 @@ export default function PricesScreen() {
           setTomorrowError(err.message);
         });
     }
+  };
+  useEffect(() => {
+    updateData();
+  }, [selectedArea, areaLoading]);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === "active") {
+        const newHour = new Date().getHours();
+
+        if (newHour !== currentHourRef.current) {
+          currentHourRef.current = newHour;
+          updateData();
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription?.remove();
+    };
   }, [selectedArea, areaLoading]);
   const getAreaName = (area: string) => {
     const names: Record<string, string> = {
@@ -140,7 +167,6 @@ export default function PricesScreen() {
           </ThemedText>
         </ThemedText>
 
-        {/* Dagens priser */}
         <ThemedText type="subtitle">Idag</ThemedText>
         <FlatList
           data={prices}
@@ -161,7 +187,6 @@ export default function PricesScreen() {
           scrollEnabled={false}
         />
 
-        {/* Morgondagens priser */}
         <ThemedText type="subtitle" style={styles.tomorrowTitle}>
           Imorgon
         </ThemedText>
