@@ -162,7 +162,7 @@ export default function PricesScreen() {
     >
       <ThemedView style={styles.container}>
         <ThemedText type="title">
-          Timpriset
+          Elpriset
           <ThemedText type="titleLight">
             {" "}
             / {getAreaName(selectedArea)}

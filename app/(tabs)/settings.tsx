@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: "rgba(0, 0, 0, 0.12)",
+    borderColor: "rgba(123, 123, 123, 0.25)",
 
     shadowOpacity: 0.05,
     shadowRadius: 1,
