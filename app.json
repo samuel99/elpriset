@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#5a4494"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.samuel_bank.elpriset"
