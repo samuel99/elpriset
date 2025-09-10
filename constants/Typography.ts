@@ -25,13 +25,3 @@ export const Typography = StyleSheet.create({
     lineHeight: 20,
   },
 });
-
-export const TypographyColors = {
-  primary: "#000000",
-  secondary: "#666666",
-  disabled: "#999999",
-  accent: "#6750A4",
-  error: "#B3261E",
-  success: "#4CAF50",
-  warning: "#FF9800",
-};

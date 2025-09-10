@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
 import { usePriceArea } from "@/hooks/usePriceArea";
 import { ThemeMode, useThemeMode } from "@/hooks/useThemeMode";
 import React from "react";
@@ -88,7 +89,7 @@ export default function SettingsScreen() {
                 <IconSymbol
                   name="checkmark.circle.fill"
                   size={16}
-                  color="#fff"
+                  color={Colors.primaryAccent}
                 />
               )}
             </TouchableOpacity>
@@ -124,7 +125,7 @@ export default function SettingsScreen() {
                 <IconSymbol
                   name="checkmark.circle.fill"
                   size={16}
-                  color="#fff"
+                  color={Colors.dark.background}
                 />
               )}
             </TouchableOpacity>
@@ -190,13 +191,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     borderWidth: 2,
     borderColor: "rgba(123, 123, 123, 0.25)",
-
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
+    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
   },
   selectedOption: {
-    borderColor: "#6750A4", // Material Purple Primary
-    backgroundColor: "#6750A4", // Material Purple with low opacity
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary,
   },
   optionContent: {
     flex: 1,
@@ -205,12 +204,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectedOptionLabel: {
-    color: "#fff", // Material Purple Primary
-    backgroundColor: "#6750A4", // Material Purple with low opacity
+    color: Colors.primaryAccent,
+    backgroundColor: Colors.primary,
   },
   link: {
     textDecorationStyle: "solid",
     textDecorationLine: "underline",
-    color: "#6750A4", // Match the link color from ThemedText
+    color: Colors.primary,
   },
 });

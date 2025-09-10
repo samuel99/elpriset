@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { Colors } from "@/constants/Colors";
 import { getTheme } from "@/constants/Theme";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
@@ -273,11 +274,11 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   currentHourRow: {
-    backgroundColor: "#6750A4",
+    backgroundColor: Colors.primary,
     borderRadius: 6,
   },
   currentHourText: {
-    color: "#FFFFFF",
+    color: Colors.primaryAccent,
   },
   cell: { fontSize: 16 },
   loadingContainer: {

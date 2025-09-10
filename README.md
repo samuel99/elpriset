@@ -10,6 +10,8 @@ När morgondagens priser är tillgängliga ser du dem i samma vy som dagens, ing
 
 Ingen tracking. Inga annonser. Ingen känslig data.
 
+Bygg projektet med `eas build --platform android`.
+
 # Generell info om appen på engelska:
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).

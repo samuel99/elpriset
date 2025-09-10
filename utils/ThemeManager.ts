@@ -23,8 +23,7 @@ export const ThemeManager = {
     currentThemeMode = mode;
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-      console.log("Theme saved:", mode);
-      notifyListeners(); // Notify all components
+      notifyListeners();
     } catch (error) {
       console.error("Failed to save theme:", error);
     }
