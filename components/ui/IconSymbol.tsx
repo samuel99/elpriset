@@ -17,9 +17,8 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
-  "house.fill": "home", // ← Ändra detta för att ändra "Priser"-ikonen
-  "chart.line.uptrend.xyaxis": "graph", // ← Graf-ikon för priser
-  "gearshape.fill": "settings", // ← Ändra detta för att ändra "Inställningar"-ikonen
+  "chart.line.uptrend.xyaxis": "graph",
+  "gearshape.fill": "settings",
   "checkmark.circle.fill": "check",
 } as IconMapping;
 

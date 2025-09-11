@@ -1,8 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
-import { getTheme } from "@/constants/Theme";
-import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -30,8 +28,6 @@ export default function PricesScreen() {
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
 
   const currentHourRef = useRef(new Date().getHours());
-  const colorScheme = useColorScheme();
-  const theme = getTheme(colorScheme);
   const updateData = () => {
     if (!areaLoading && selectedArea) {
       setLoading(true);
