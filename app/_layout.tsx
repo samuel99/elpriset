@@ -6,7 +6,7 @@ import "react-native-reanimated";
 import { getTheme } from "@/constants/Theme";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAppFonts } from "@/hooks/useFonts";
-import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -20,11 +20,11 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={theme}>
-      <View
+      <SafeAreaView
+        edges={["top"]}
         style={{
           flex: 1,
           backgroundColor: theme.colors.background,
-          paddingTop: 45,
         }}
       >
         <Stack>
@@ -32,7 +32,7 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style={colorScheme === "dark" ? "light" : "dark"} />
-      </View>
+      </SafeAreaView>
     </ThemeProvider>
   );
 }

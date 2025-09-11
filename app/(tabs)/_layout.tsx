@@ -6,10 +6,12 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { getTheme } from "@/constants/Theme";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const theme = getTheme(colorScheme);
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -19,12 +21,16 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: {
-          height: 70,
           justifyContent: "center",
+          paddingBottom: 0,
         },
         tabBarItemStyle: { paddingBlock: 5 },
         tabBarIconStyle: { marginTop: "auto" },
-        tabBarLabelStyle: { marginTop: 3, marginBottom: "auto" },
+        tabBarLabelStyle: {
+          marginTop: 3,
+          marginBottom: "auto",
+          paddingBottom: insets.bottom,
+        },
       }}
     >
       <Tabs.Screen
