@@ -22,6 +22,7 @@ export default function TabLayout() {
     >
       <Tabs
         screenOptions={{
+          tabBarLabelPosition: "below-icon",
           tabBarActiveTintColor: theme.colors.primary,
           headerShown: false,
           tabBarButton: HapticTab,
