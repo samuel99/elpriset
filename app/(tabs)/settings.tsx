@@ -61,7 +61,6 @@ export default function SettingsScreen() {
       <ThemedView style={styles.container}>
         <ThemedText type="title">Inställningar</ThemedText>
 
-        {/* Elprisområde sektion */}
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             Elprisområde
@@ -96,7 +95,6 @@ export default function SettingsScreen() {
           ))}
         </ThemedView>
 
-        {/* Tema sektion */}
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
             Utseende

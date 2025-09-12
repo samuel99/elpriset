@@ -6,6 +6,7 @@ export const AppLightTheme = {
   colors: {
     ...DefaultTheme.colors,
     background: Colors.light.background,
+    backgroundDark: Colors.light.backgroundDark,
     text: Colors.light.text,
     primary: Colors.primary,
   },
@@ -16,6 +17,7 @@ export const AppDarkTheme = {
   colors: {
     ...DarkTheme.colors,
     background: Colors.dark.background,
+    backgroundDark: Colors.dark.backgroundDark,
     text: Colors.dark.text,
     primary: Colors.primary,
   },

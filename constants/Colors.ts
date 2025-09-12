@@ -10,11 +10,13 @@ export const Colors = {
   light: {
     text: "#2b2b2b",
     background: "#f9f6f1",
+    backgroundDark: "#f9f6f1",
     icon: "#687076",
   },
   dark: {
     text: "#f0ede9",
     background: "#1e1c1a",
+    backgroundDark: "#0f0e0d",
     icon: "#9BA1A6",
   },
 };
