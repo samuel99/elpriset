@@ -1,48 +1,76 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
 export type ThemeMode = "system" | "light" | "dark";
 
 const THEME_STORAGE_KEY = "app_theme_mode";
 
-// Global state
 let currentThemeMode: ThemeMode = "system";
 let listeners: Array<() => void> = [];
+let isInitialized = false;
 
-// Notify all listeners when theme changes
 const notifyListeners = () => {
   listeners.forEach((listener) => listener());
 };
 
-// Theme manager functions
+const getStorageItem = async (key: string): Promise<string | null> => {
+  try {
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+      return null;
+    }
+    return await AsyncStorage.getItem(key);
+  } catch (error) {
+    console.error("Storage getItem error:", error);
+    return null;
+  }
+};
+
+const setStorageItem = async (key: string, value: string): Promise<void> => {
+  try {
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.localStorage) {
+        window.localStorage.setItem(key, value);
+      }
+      return;
+    }
+    await AsyncStorage.setItem(key, value);
+  } catch (error) {
+    console.error("Storage setItem error:", error);
+  }
+};
+
 export const ThemeManager = {
-  // Get current theme mode
   getThemeMode: (): ThemeMode => currentThemeMode,
 
-  // Set theme mode and save to storage
   setThemeMode: async (mode: ThemeMode) => {
     currentThemeMode = mode;
     try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
+      await setStorageItem(THEME_STORAGE_KEY, mode);
       notifyListeners();
     } catch (error) {
       console.error("Failed to save theme:", error);
     }
   },
 
-  // Load theme from storage
   loadTheme: async () => {
     try {
-      const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY);
+      const saved = await getStorageItem(THEME_STORAGE_KEY);
       if (saved && ["system", "light", "dark"].includes(saved)) {
         currentThemeMode = saved as ThemeMode;
       }
+      isInitialized = true;
       notifyListeners();
     } catch (error) {
       console.error("Failed to load theme:", error);
+      isInitialized = true;
     }
   },
 
-  // Subscribe to theme changes
+  isInitialized: () => isInitialized,
+
   subscribe: (listener: () => void) => {
     listeners.push(listener);
     return () => {
@@ -50,16 +78,17 @@ export const ThemeManager = {
     };
   },
 
-  // Get actual color scheme based on current mode
   getColorScheme: (): "light" | "dark" => {
     if (currentThemeMode === "system") {
-      // For system mode, we need to get the system scheme
-      // This will be handled in the hook
-      return "light"; // Default fallback
+      return "light";
     }
     return currentThemeMode;
   },
 };
 
-// Initialize theme on module load
-ThemeManager.loadTheme();
+if (
+  Platform.OS !== "web" ||
+  (typeof window !== "undefined" && window.localStorage)
+) {
+  ThemeManager.loadTheme();
+}

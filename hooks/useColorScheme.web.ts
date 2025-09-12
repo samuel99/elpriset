@@ -32,19 +32,30 @@ const useWebSystemColorScheme = (): "light" | "dark" => {
 export function useColorScheme() {
   const webSystemColorScheme = useWebSystemColorScheme();
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">("light");
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize and update theme when dependencies change
+  // Initialize theme on mount
   useEffect(() => {
-    const themeMode = ThemeManager.getThemeMode();
+    const initializeTheme = async () => {
+      if (!ThemeManager.isInitialized()) {
+        await ThemeManager.loadTheme();
+      }
 
-    if (themeMode === "system") {
-      setCurrentTheme(webSystemColorScheme ?? "light");
-    } else {
-      setCurrentTheme(themeMode);
-    }
+      const themeMode = ThemeManager.getThemeMode();
+      if (themeMode === "system") {
+        setCurrentTheme(webSystemColorScheme ?? "light");
+      } else {
+        setCurrentTheme(themeMode);
+      }
+      setIsInitialized(true);
+    };
+
+    initializeTheme();
   }, [webSystemColorScheme]);
 
   useEffect(() => {
+    if (!isInitialized) return;
+
     // Subscribe to theme changes
     const unsubscribe = ThemeManager.subscribe(() => {
       const themeMode = ThemeManager.getThemeMode();
@@ -57,7 +68,7 @@ export function useColorScheme() {
     });
 
     return unsubscribe;
-  }, [webSystemColorScheme]);
+  }, [webSystemColorScheme, isInitialized]);
 
   // Update when system color scheme changes (for 'system' mode)
   useEffect(() => {
