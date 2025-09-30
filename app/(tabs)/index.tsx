@@ -19,6 +19,11 @@ type PriceEntry = {
 };
 
 export default function PricesScreen() {
+  const getCurrentTime = () => {
+    //return new Date("2025-08-12T09:06:00"); // Simulate a date for testing
+    return new Date();
+  };
+
   const [prices, setPrices] = useState<PriceEntry[]>([]);
   const [tomorrowPrices, setTomorrowPrices] = useState<PriceEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +32,7 @@ export default function PricesScreen() {
   const [tomorrowError, setTomorrowError] = useState<string | null>(null);
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
 
-  const currentHourRef = useRef(new Date().getHours());
+  const currentHourRef = useRef(getCurrentTime().getHours());
   const updateData = () => {
     if (!areaLoading && selectedArea) {
       setLoading(true);
@@ -65,7 +70,7 @@ export default function PricesScreen() {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === "active") {
-        const newHour = new Date().getHours();
+        const newHour = getCurrentTime().getHours();
 
         if (newHour !== currentHourRef.current) {
           currentHourRef.current = newHour;
@@ -95,7 +100,10 @@ export default function PricesScreen() {
 
   const formatTime = (timeStart: string) => {
     const hour = new Date(timeStart).getHours();
-    return `${hour.toString().padStart(2, "0")}:00`;
+    const minutes = new Date(timeStart).getMinutes();
+    return `${hour.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const formatPrice = (pricePerKWh: number) => {
@@ -105,23 +113,20 @@ export default function PricesScreen() {
     });
   };
 
-  const isCurrentHour = (timeStart: string) => {
-    const now = new Date();
-    const priceTime = new Date(timeStart);
+  const isHighlighted = (timeStart: string, timeEnd: string) => {
+    const now = getCurrentTime();
+    const priceStart = new Date(timeStart);
+    const priceEnd = new Date(timeEnd);
 
-    return (
-      priceTime.getDate() === now.getDate() &&
-      priceTime.getMonth() === now.getMonth() &&
-      priceTime.getFullYear() === now.getFullYear() &&
-      priceTime.getHours() === now.getHours()
-    );
+    // Check if current time falls within the price period
+    return now >= priceStart && now < priceEnd;
   };
 
-  const getRowStyle = (index: number, timeStart: string) => {
-    const isCurrentHourTime = isCurrentHour(timeStart);
+  const getRowStyle = (index: number, timeStart: string, timeEnd: string) => {
+    const isHighlightedRow = isHighlighted(timeStart, timeEnd);
     const isEvenRow = index % 2 === 0;
 
-    if (isCurrentHourTime) {
+    if (isHighlightedRow) {
       return [styles.row, styles.currentHourRow];
     } else if (isEvenRow) {
       return [styles.row, styles.evenRow];
@@ -130,8 +135,8 @@ export default function PricesScreen() {
     }
   };
 
-  const getTextStyle = (timeStart: string) => {
-    const isCurrentHourTime = isCurrentHour(timeStart);
+  const getTextStyle = (timeStart: string, timeEnd: string) => {
+    const isCurrentHourTime = isHighlighted(timeStart, timeEnd);
     if (isCurrentHourTime) {
       return [styles.cell, styles.currentHourText];
     }
@@ -174,11 +179,13 @@ export default function PricesScreen() {
             `today-${item?.time_start || index.toString()}`
           }
           renderItem={({ item, index }) => (
-            <ThemedView style={getRowStyle(index, item.time_start)}>
-              <ThemedText style={getTextStyle(item.time_start)}>
+            <ThemedView
+              style={getRowStyle(index, item.time_start, item.time_end)}
+            >
+              <ThemedText style={getTextStyle(item.time_start, item.time_end)}>
                 {formatTime(item.time_start)}
               </ThemedText>
-              <ThemedText style={getTextStyle(item.time_start)}>
+              <ThemedText style={getTextStyle(item.time_start, item.time_end)}>
                 {formatPrice(item.SEK_per_kWh)} öre/kWh
               </ThemedText>
             </ThemedView>
@@ -203,11 +210,17 @@ export default function PricesScreen() {
               `tomorrow-${item?.time_start || index.toString()}`
             }
             renderItem={({ item, index }) => (
-              <ThemedView style={getRowStyle(index, item.time_start)}>
-                <ThemedText style={getTextStyle(item.time_start)}>
+              <ThemedView
+                style={getRowStyle(index, item.time_start, item.time_end)}
+              >
+                <ThemedText
+                  style={getTextStyle(item.time_start, item.time_end)}
+                >
                   {formatTime(item.time_start)}
                 </ThemedText>
-                <ThemedText style={getTextStyle(item.time_start)}>
+                <ThemedText
+                  style={getTextStyle(item.time_start, item.time_end)}
+                >
                   {formatPrice(item.SEK_per_kWh)} öre/kWh
                 </ThemedText>
               </ThemedView>
@@ -244,6 +257,8 @@ async function fetchPricesForDate(
   const url = `https://www.elprisetjustnu.se/api/v1/prices/${targetDate.getFullYear()}/${dateStr.slice(
     5
   )}_${area}.json`;
+  //const url =
+  //  "https://www.elprisetjustnu.se/api/v1/prices/kvartspris_demo.json";
 
   const response = await fetch(url);
   if (!response.ok) {
