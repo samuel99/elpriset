@@ -9,6 +9,7 @@ export const AppLightTheme = {
     backgroundDark: Colors.light.backgroundDark,
     text: Colors.light.text,
     primary: Colors.primary,
+    chartBar: Colors.light.chartBar,
   },
 };
 
@@ -20,6 +21,7 @@ export const AppDarkTheme = {
     backgroundDark: Colors.dark.backgroundDark,
     text: Colors.dark.text,
     primary: Colors.primary,
+    chartBar: Colors.dark.chartBar,
   },
 };
 

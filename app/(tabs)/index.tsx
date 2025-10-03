@@ -1,72 +1,44 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
-import React, { useEffect, useRef, useState } from "react";
+import { usePriceData } from "@/hooks/usePriceData";
+import { transformData } from "@/utils/chartUtils";
+import { isHighlighted, keepPreviousHour } from "@/utils/dateUtils";
+import {
+  formatPrice,
+  formatTime,
+  getAreaName,
+  getCurrentTime,
+} from "@/utils/priceUtils";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   AppState,
   FlatList,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
-type PriceEntry = {
-  SEK_per_kWh: number;
-  EUR_per_kWh: number;
-  EXR: number;
-  time_start: string;
-  time_end: string;
-};
+import { BarChart } from "react-native-gifted-charts";
 
 export default function PricesScreen() {
-  const getCurrentTime = () => {
-    //return new Date("2025-08-12T09:06:00"); // Simulate a date for testing
-    return new Date();
-  };
-
-  const [prices, setPrices] = useState<PriceEntry[]>([]);
-  const [tomorrowPrices, setTomorrowPrices] = useState<PriceEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tomorrowLoading, setTomorrowLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tomorrowError, setTomorrowError] = useState<string | null>(null);
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
-
+  const colorScheme = useColorScheme();
   const currentHourRef = useRef(getCurrentTime().getHours());
-  const updateData = () => {
-    if (!areaLoading && selectedArea) {
-      setLoading(true);
-      setTomorrowLoading(true);
-      setError(null);
-      setTomorrowError(null);
 
-      fetchPricesForDate(selectedArea)
-        .then((data) => {
-          setPrices(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-        });
+  const {
+    prices,
+    tomorrowPrices,
+    loading,
+    tomorrowLoading,
+    error,
+    tomorrowError,
+    refetch,
+  } = usePriceData(selectedArea, areaLoading);
 
-      fetchPricesForDate(selectedArea, 1)
-        .then((data: PriceEntry[]) => {
-          setTomorrowPrices(data);
-          setTomorrowLoading(false);
-          setTomorrowError(null);
-        })
-        .catch((err: any) => {
-          setTomorrowPrices([]);
-          setTomorrowLoading(false);
-          setTomorrowError(err.message);
-        });
-    }
-  };
-  useEffect(() => {
-    updateData();
-  }, [selectedArea, areaLoading]);
-
+  // Handle app state changes to refresh data when hour changes
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === "active") {
@@ -74,7 +46,7 @@ export default function PricesScreen() {
 
         if (newHour !== currentHourRef.current) {
           currentHourRef.current = newHour;
-          updateData();
+          refetch();
         }
       }
     };
@@ -87,61 +59,56 @@ export default function PricesScreen() {
     return () => {
       subscription?.remove();
     };
-  }, [selectedArea, areaLoading]);
-  const getAreaName = (area: string) => {
-    const names: Record<string, string> = {
-      SE1: "SE1",
-      SE2: "SE2",
-      SE3: "SE3",
-      SE4: "SE4",
-    };
-    return names[area] || area;
-  };
+  }, [refetch]);
 
-  const formatTime = (timeStart: string) => {
-    const hour = new Date(timeStart).getHours();
-    const minutes = new Date(timeStart).getMinutes();
-    return `${hour.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  // Memoized functions for performance optimization
+  const getRowStyle = useCallback(
+    (index: number, timeStart: string, timeEnd: string) => {
+      const isHighlightedRow = isHighlighted(timeStart, timeEnd);
+      const groupIndex = Math.floor(index / 4);
+      const isEvenGroup = groupIndex % 2 === 0;
 
-  const formatPrice = (pricePerKWh: number) => {
-    return (pricePerKWh * 100).toLocaleString("sv-SE", {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    });
-  };
+      if (isHighlightedRow) {
+        return [styles.row, styles.currentHourRow];
+      } else if (isEvenGroup) {
+        return [styles.row, styles.evenRow];
+      } else {
+        return [styles.row, styles.oddRow];
+      }
+    },
+    []
+  );
 
-  const isHighlighted = (timeStart: string, timeEnd: string) => {
-    const now = getCurrentTime();
-    const priceStart = new Date(timeStart);
-    const priceEnd = new Date(timeEnd);
-
-    // Check if current time falls within the price period
-    return now >= priceStart && now < priceEnd;
-  };
-
-  const getRowStyle = (index: number, timeStart: string, timeEnd: string) => {
-    const isHighlightedRow = isHighlighted(timeStart, timeEnd);
-    const isEvenRow = index % 2 === 0;
-
-    if (isHighlightedRow) {
-      return [styles.row, styles.currentHourRow];
-    } else if (isEvenRow) {
-      return [styles.row, styles.evenRow];
-    } else {
-      return [styles.row, styles.oddRow];
-    }
-  };
-
-  const getTextStyle = (timeStart: string, timeEnd: string) => {
+  const getTextStyle = useCallback((timeStart: string, timeEnd: string) => {
     const isCurrentHourTime = isHighlighted(timeStart, timeEnd);
     if (isCurrentHourTime) {
       return [styles.cell, styles.currentHourText];
     }
     return styles.cell;
-  };
+  }, []);
+
+  // Memoized filtered data to avoid recalculation on every render
+  const filteredTodayPrices = useMemo(
+    () => prices.filter((item) => keepPreviousHour(item.time_start)),
+    [prices]
+  );
+
+  // Memoized chart data and calculations
+  const chartData = useMemo(
+    () => transformData(prices, tomorrowPrices, colorScheme ?? "light"),
+    [prices, tomorrowPrices, colorScheme]
+  );
+
+  const { maxValue, minValue } = useMemo(() => {
+    if (chartData.length === 0) return { maxValue: 0, minValue: 0 };
+    const values = chartData.map((item) => item.value);
+    return {
+      maxValue: Math.max(...values),
+      minValue: Math.min(...values),
+    };
+  }, [chartData]);
+
+  // Early returns after all hooks have been called
   if (areaLoading || loading) {
     return (
       <ThemedView style={styles.container}>
@@ -153,7 +120,10 @@ export default function PricesScreen() {
   if (error) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>Fel vid hämtning: {error}</ThemedText>
+        <ThemedText>
+          Dang, elpris-APIet svarar inte. Testa gärna att starta om appen.
+          {error}
+        </ThemedText>
       </ThemedView>
     );
   }
@@ -170,10 +140,44 @@ export default function PricesScreen() {
             / {getAreaName(selectedArea)}
           </ThemedText>
         </ThemedText>
-
+        <View
+          style={{
+            flex: 1,
+            marginInline: -12,
+            marginBlock: 20,
+          }}
+        >
+          <BarChart
+            data={chartData}
+            height={200}
+            barWidth={4}
+            spacing={2}
+            roundedTop
+            noOfSections={5}
+            hideRules
+            maxValue={maxValue}
+            mostNegativeValue={minValue}
+            yAxisThickness={0}
+            yAxisColor={Colors[colorScheme].text}
+            yAxisTextStyle={{
+              fontSize: 16,
+              textAlign: "right",
+              color: Colors[colorScheme].text,
+            }}
+            xAxisThickness={1}
+            autoShiftLabels
+            labelWidth={20}
+            xAxisLabelTextStyle={{
+              fontSize: 16,
+              textAlign: "center",
+              marginInlineStart: -15,
+              color: Colors[colorScheme].text,
+            }}
+          />
+        </View>
         <ThemedText type="subtitle">Idag</ThemedText>
         <FlatList
-          data={prices}
+          data={filteredTodayPrices}
           style={{ marginInline: -12 }}
           keyExtractor={(item, index) =>
             `today-${item?.time_start || index.toString()}`
@@ -237,34 +241,6 @@ export default function PricesScreen() {
       </ThemedView>
     </ScrollView>
   );
-}
-
-async function fetchPricesForDate(
-  area: string,
-  daysOffset: number = 0
-): Promise<PriceEntry[]> {
-  const now = new Date();
-  const targetDate = new Date(now);
-  targetDate.setDate(now.getDate() + daysOffset);
-
-  const dateStr =
-    targetDate.getFullYear() +
-    "-" +
-    String(targetDate.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(targetDate.getDate()).padStart(2, "0");
-
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${targetDate.getFullYear()}/${dateStr.slice(
-    5
-  )}_${area}.json`;
-  //const url =
-  //  "https://www.elprisetjustnu.se/api/v1/prices/kvartspris_demo.json";
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return await response.json();
 }
 
 const styles = StyleSheet.create({

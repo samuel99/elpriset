@@ -3,7 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { usePriceArea } from "@/hooks/usePriceArea";
-import { ThemeMode, useThemeMode } from "@/hooks/useThemeMode";
+import { useThemeMode } from "@/hooks/useThemeMode";
 import React from "react";
 import {
   Linking,
@@ -12,15 +12,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-type PriceAreaOption = {
-  value: string;
-  label: string;
-};
-
-type ThemeOption = {
-  value: ThemeMode;
-  label: string;
-};
+import type { PriceAreaOption, ThemeOption } from "@/types";
 
 const PRICE_AREAS: PriceAreaOption[] = [
   { value: "SE1", label: "SE1, Norra Sverige" },

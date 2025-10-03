@@ -1,6 +1,10 @@
-import { ThemeManager, ThemeMode } from "@/utils/ThemeManager";
+import type { ThemeMode } from "@/types";
+import { ThemeManager } from "@/utils/ThemeManager";
 import { useEffect, useState } from "react";
 import { useColorScheme as useSystemColorScheme } from "react-native";
+
+// Re-export ThemeMode for convenience
+export type { ThemeMode };
 
 export function useThemeMode() {
   const systemColorScheme = useSystemColorScheme();
@@ -39,5 +43,3 @@ export function useThemeMode() {
     isLoading,
   };
 }
-
-export type { ThemeMode };

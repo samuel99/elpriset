@@ -37,3 +37,13 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.staging
+
+# Keep example files
+!.env.example
+!.env.local.example
