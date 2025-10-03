@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -9,7 +10,10 @@ import {
   FlatList,
   ScrollView,
   StyleSheet,
+  View,
 } from "react-native";
+import { BarChart } from "react-native-gifted-charts";
+
 type PriceEntry = {
   SEK_per_kWh: number;
   EUR_per_kWh: number;
@@ -18,10 +22,15 @@ type PriceEntry = {
   time_end: string;
 };
 
+type BarDataPoint = {
+  value: number;
+  label?: string;
+  frontColor?: string;
+};
+
 export default function PricesScreen() {
   const getCurrentTime = () => {
-    //return new Date("2025-08-12T09:06:00"); // Simulate a date for testing
-    return new Date();
+    return new Date("2025-10-03T20:06:00"); // Simulate a date for testing
   };
 
   const [prices, setPrices] = useState<PriceEntry[]>([]);
@@ -31,7 +40,7 @@ export default function PricesScreen() {
   const [error, setError] = useState<string | null>(null);
   const [tomorrowError, setTomorrowError] = useState<string | null>(null);
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
-
+  const colorScheme = useColorScheme();
   const currentHourRef = useRef(getCurrentTime().getHours());
   const updateData = () => {
     if (!areaLoading && selectedArea) {
@@ -118,17 +127,17 @@ export default function PricesScreen() {
     const priceStart = new Date(timeStart);
     const priceEnd = new Date(timeEnd);
 
-    // Check if current time falls within the price period
     return now >= priceStart && now < priceEnd;
   };
 
   const getRowStyle = (index: number, timeStart: string, timeEnd: string) => {
     const isHighlightedRow = isHighlighted(timeStart, timeEnd);
-    const isEvenRow = index % 2 === 0;
+    const groupIndex = Math.floor(index / 4);
+    const isEvenGroup = groupIndex % 2 === 0;
 
     if (isHighlightedRow) {
       return [styles.row, styles.currentHourRow];
-    } else if (isEvenRow) {
+    } else if (isEvenGroup) {
       return [styles.row, styles.evenRow];
     } else {
       return [styles.row, styles.oddRow];
@@ -142,6 +151,65 @@ export default function PricesScreen() {
     }
     return styles.cell;
   };
+
+  // Funktion för att mappa API-data till graf-data
+  const transformData = (
+    todayPrices: PriceEntry[],
+    tomorrowPrices: PriceEntry[] = []
+  ): BarDataPoint[] => {
+    const combinedData: BarDataPoint[] = [];
+
+    // Add today's prices
+    const now = getCurrentTime();
+    const oneHourAgo = new Date(now.getTime() - 60 * 240 * 1000); // 1 hour ago
+
+    todayPrices.forEach((entry) => {
+      const date = new Date(entry.time_start);
+
+      if (date < oneHourAgo) {
+        return;
+      }
+
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+
+      // Only show label every 4th hour and only for exact hour (00 minutes)
+      const shouldShowLabel = hours % 4 === 0 && minutes === 0;
+
+      combinedData.push({
+        value: entry.SEK_per_kWh * 100,
+        ...(shouldShowLabel && {
+          label: `${hours.toString().padStart(2, "0")}`,
+        }),
+        frontColor: isHighlighted(entry.time_start, entry.time_end)
+          ? Colors.primary
+          : Colors[colorScheme].chartBar,
+      });
+    });
+
+    // Add tomorrow's prices if available
+    if (tomorrowPrices.length > 0) {
+      tomorrowPrices.forEach((entry) => {
+        const date = new Date(entry.time_start);
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+
+        // Only show label every 4th hour and only for exact hour (00 minutes)
+        const shouldShowLabel = hours % 4 === 0 && minutes === 0;
+
+        combinedData.push({
+          value: entry.SEK_per_kWh * 100,
+          ...(shouldShowLabel && {
+            label: `${hours.toString().padStart(2, "0")}`,
+          }),
+          frontColor: Colors[colorScheme].chartBar,
+        });
+      });
+    }
+
+    return combinedData;
+  };
+
   if (areaLoading || loading) {
     return (
       <ThemedView style={styles.container}>
@@ -157,6 +225,11 @@ export default function PricesScreen() {
       </ThemedView>
     );
   }
+
+  // Calculate chart data and values once
+  const chartData = transformData(prices, tomorrowPrices);
+  const maxValue = Math.max(...chartData.map((item) => item.value));
+  const minValue = Math.min(...chartData.map((item) => item.value));
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -170,7 +243,30 @@ export default function PricesScreen() {
             / {getAreaName(selectedArea)}
           </ThemedText>
         </ThemedText>
-
+        <View style={{ flex: 1 }}>
+          <BarChart
+            data={chartData}
+            height={200}
+            barWidth={4}
+            spacing={2}
+            roundedTop
+            hideRules
+            maxValue={maxValue}
+            mostNegativeValue={minValue}
+            yAxisThickness={0}
+            hideYAxisText={true}
+            hideOrigin
+            autoShiftLabels
+            xAxisThickness={0}
+            labelWidth={20}
+            xAxisLabelTextStyle={{
+              fontSize: 16,
+              textAlign: "center",
+              marginInlineStart: -15,
+              color: Colors[colorScheme].text,
+            }}
+          />
+        </View>
         <ThemedText type="subtitle">Idag</ThemedText>
         <FlatList
           data={prices}
