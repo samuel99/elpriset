@@ -3,8 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
-import { fetchPricesForDate } from "@/services/priceService";
-import type { PriceEntry } from "@/types";
+import { usePriceData } from "@/hooks/usePriceData";
 import { transformData } from "@/utils/chartUtils";
 import { isHighlighted, keepPreviousHour } from "@/utils/dateUtils";
 import {
@@ -13,7 +12,7 @@ import {
   getAreaName,
   getCurrentTime,
 } from "@/utils/priceUtils";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   AppState,
@@ -25,49 +24,21 @@ import {
 import { BarChart } from "react-native-gifted-charts";
 
 export default function PricesScreen() {
-  const [prices, setPrices] = useState<PriceEntry[]>([]);
-  const [tomorrowPrices, setTomorrowPrices] = useState<PriceEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [tomorrowLoading, setTomorrowLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tomorrowError, setTomorrowError] = useState<string | null>(null);
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
   const colorScheme = useColorScheme();
   const currentHourRef = useRef(getCurrentTime().getHours());
-  const updateData = () => {
-    if (!areaLoading && selectedArea) {
-      setLoading(true);
-      setTomorrowLoading(true);
-      setError(null);
-      setTomorrowError(null);
 
-      fetchPricesForDate(selectedArea)
-        .then((data) => {
-          setPrices(data);
-          setLoading(false);
-        })
-        .catch((err) => {
-          setError(err.message);
-          setLoading(false);
-        });
+  const {
+    prices,
+    tomorrowPrices,
+    loading,
+    tomorrowLoading,
+    error,
+    tomorrowError,
+    refetch,
+  } = usePriceData(selectedArea, areaLoading);
 
-      fetchPricesForDate(selectedArea, 1)
-        .then((data: PriceEntry[]) => {
-          setTomorrowPrices(data);
-          setTomorrowLoading(false);
-          setTomorrowError(null);
-        })
-        .catch((err: any) => {
-          setTomorrowPrices([]);
-          setTomorrowLoading(false);
-          setTomorrowError(err.message);
-        });
-    }
-  };
-  useEffect(() => {
-    updateData();
-  }, [selectedArea, areaLoading]);
-
+  // Handle app state changes to refresh data when hour changes
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === "active") {
@@ -75,7 +46,7 @@ export default function PricesScreen() {
 
         if (newHour !== currentHourRef.current) {
           currentHourRef.current = newHour;
-          updateData();
+          refetch();
         }
       }
     };
@@ -88,30 +59,56 @@ export default function PricesScreen() {
     return () => {
       subscription?.remove();
     };
-  }, [selectedArea, areaLoading]);
+  }, [refetch]);
 
-  const getRowStyle = (index: number, timeStart: string, timeEnd: string) => {
-    const isHighlightedRow = isHighlighted(timeStart, timeEnd);
-    const groupIndex = Math.floor(index / 4);
-    const isEvenGroup = groupIndex % 2 === 0;
+  // Memoized functions for performance optimization
+  const getRowStyle = useCallback(
+    (index: number, timeStart: string, timeEnd: string) => {
+      const isHighlightedRow = isHighlighted(timeStart, timeEnd);
+      const groupIndex = Math.floor(index / 4);
+      const isEvenGroup = groupIndex % 2 === 0;
 
-    if (isHighlightedRow) {
-      return [styles.row, styles.currentHourRow];
-    } else if (isEvenGroup) {
-      return [styles.row, styles.evenRow];
-    } else {
-      return [styles.row, styles.oddRow];
-    }
-  };
+      if (isHighlightedRow) {
+        return [styles.row, styles.currentHourRow];
+      } else if (isEvenGroup) {
+        return [styles.row, styles.evenRow];
+      } else {
+        return [styles.row, styles.oddRow];
+      }
+    },
+    []
+  );
 
-  const getTextStyle = (timeStart: string, timeEnd: string) => {
+  const getTextStyle = useCallback((timeStart: string, timeEnd: string) => {
     const isCurrentHourTime = isHighlighted(timeStart, timeEnd);
     if (isCurrentHourTime) {
       return [styles.cell, styles.currentHourText];
     }
     return styles.cell;
-  };
+  }, []);
 
+  // Memoized filtered data to avoid recalculation on every render
+  const filteredTodayPrices = useMemo(
+    () => prices.filter((item) => keepPreviousHour(item.time_start)),
+    [prices]
+  );
+
+  // Memoized chart data and calculations
+  const chartData = useMemo(
+    () => transformData(prices, tomorrowPrices, colorScheme ?? "light"),
+    [prices, tomorrowPrices, colorScheme]
+  );
+
+  const { maxValue, minValue } = useMemo(() => {
+    if (chartData.length === 0) return { maxValue: 0, minValue: 0 };
+    const values = chartData.map((item) => item.value);
+    return {
+      maxValue: Math.max(...values),
+      minValue: Math.min(...values),
+    };
+  }, [chartData]);
+
+  // Early returns after all hooks have been called
   if (areaLoading || loading) {
     return (
       <ThemedView style={styles.container}>
@@ -123,19 +120,13 @@ export default function PricesScreen() {
   if (error) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>Fel vid hämtning: {error}</ThemedText>
+        <ThemedText>
+          Dang, elpris-APIet svarar inte. Testa gärna att starta om appen.
+          {error}
+        </ThemedText>
       </ThemedView>
     );
   }
-
-  // Calculate chart data and values once
-  const chartData = transformData(
-    prices,
-    tomorrowPrices,
-    colorScheme ?? "light"
-  );
-  const maxValue = Math.max(...chartData.map((item) => item.value));
-  const minValue = Math.min(...chartData.map((item) => item.value));
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -186,7 +177,7 @@ export default function PricesScreen() {
         </View>
         <ThemedText type="subtitle">Idag</ThemedText>
         <FlatList
-          data={prices.filter((item) => keepPreviousHour(item.time_start))}
+          data={filteredTodayPrices}
           style={{ marginInline: -12 }}
           keyExtractor={(item, index) =>
             `today-${item?.time_start || index.toString()}`

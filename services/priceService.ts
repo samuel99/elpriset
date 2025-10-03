@@ -1,3 +1,4 @@
+import { API_CONFIG, buildPriceUrl } from "@/config/api";
 import type { PriceEntry } from "@/types";
 
 /**
@@ -11,21 +12,36 @@ export async function fetchPricesForDate(
   const targetDate = new Date(now);
   targetDate.setDate(now.getDate() + daysOffset);
 
-  const dateStr =
-    targetDate.getFullYear() +
-    "-" +
-    String(targetDate.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(targetDate.getDate()).padStart(2, "0");
+  const url = buildPriceUrl(area, targetDate);
+  // For testing: const url = DEMO_URL;
 
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${targetDate.getFullYear()}/${dateStr.slice(
-    5
-  )}_${area}.json`;
-  //const url = "https://www.elprisetjustnu.se/api/v1/prices/kvartspris_demo.json";
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.TIMEOUT);
 
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error! status: ${response.status} - ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        throw new Error(`Request timeout after ${API_CONFIG.TIMEOUT}ms`);
+      }
+      throw error;
+    }
+
+    throw new Error("Unknown error occurred while fetching prices");
   }
-  return await response.json();
 }
