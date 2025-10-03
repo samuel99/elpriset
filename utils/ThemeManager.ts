@@ -1,7 +1,6 @@
+import type { ThemeMode } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
-
-export type ThemeMode = "system" | "light" | "dark";
 
 const THEME_STORAGE_KEY = "app_theme_mode";
 

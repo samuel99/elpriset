@@ -3,6 +3,16 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { usePriceArea } from "@/hooks/usePriceArea";
+import { fetchPricesForDate } from "@/services/priceService";
+import type { PriceEntry } from "@/types";
+import { transformData } from "@/utils/chartUtils";
+import { isHighlighted } from "@/utils/dateUtils";
+import {
+  formatPrice,
+  formatTime,
+  getAreaName,
+  getCurrentTime,
+} from "@/utils/priceUtils";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -14,25 +24,7 @@ import {
 } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
-type PriceEntry = {
-  SEK_per_kWh: number;
-  EUR_per_kWh: number;
-  EXR: number;
-  time_start: string;
-  time_end: string;
-};
-
-type BarDataPoint = {
-  value: number;
-  label?: string;
-  frontColor?: string;
-};
-
 export default function PricesScreen() {
-  const getCurrentTime = () => {
-    return new Date("2025-10-03T20:06:00"); // Simulate a date for testing
-  };
-
   const [prices, setPrices] = useState<PriceEntry[]>([]);
   const [tomorrowPrices, setTomorrowPrices] = useState<PriceEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,38 +89,6 @@ export default function PricesScreen() {
       subscription?.remove();
     };
   }, [selectedArea, areaLoading]);
-  const getAreaName = (area: string) => {
-    const names: Record<string, string> = {
-      SE1: "SE1",
-      SE2: "SE2",
-      SE3: "SE3",
-      SE4: "SE4",
-    };
-    return names[area] || area;
-  };
-
-  const formatTime = (timeStart: string) => {
-    const hour = new Date(timeStart).getHours();
-    const minutes = new Date(timeStart).getMinutes();
-    return `${hour.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  const formatPrice = (pricePerKWh: number) => {
-    return (pricePerKWh * 100).toLocaleString("sv-SE", {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    });
-  };
-
-  const isHighlighted = (timeStart: string, timeEnd: string) => {
-    const now = getCurrentTime();
-    const priceStart = new Date(timeStart);
-    const priceEnd = new Date(timeEnd);
-
-    return now >= priceStart && now < priceEnd;
-  };
 
   const getRowStyle = (index: number, timeStart: string, timeEnd: string) => {
     const isHighlightedRow = isHighlighted(timeStart, timeEnd);
@@ -152,64 +112,6 @@ export default function PricesScreen() {
     return styles.cell;
   };
 
-  // Funktion för att mappa API-data till graf-data
-  const transformData = (
-    todayPrices: PriceEntry[],
-    tomorrowPrices: PriceEntry[] = []
-  ): BarDataPoint[] => {
-    const combinedData: BarDataPoint[] = [];
-
-    // Add today's prices
-    const now = getCurrentTime();
-    const oneHourAgo = new Date(now.getTime() - 60 * 240 * 1000); // 1 hour ago
-
-    todayPrices.forEach((entry) => {
-      const date = new Date(entry.time_start);
-
-      if (date < oneHourAgo) {
-        return;
-      }
-
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-
-      // Only show label every 4th hour and only for exact hour (00 minutes)
-      const shouldShowLabel = hours % 4 === 0 && minutes === 0;
-
-      combinedData.push({
-        value: entry.SEK_per_kWh * 100,
-        ...(shouldShowLabel && {
-          label: `${hours.toString().padStart(2, "0")}`,
-        }),
-        frontColor: isHighlighted(entry.time_start, entry.time_end)
-          ? Colors.primary
-          : Colors[colorScheme].chartBar,
-      });
-    });
-
-    // Add tomorrow's prices if available
-    if (tomorrowPrices.length > 0) {
-      tomorrowPrices.forEach((entry) => {
-        const date = new Date(entry.time_start);
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-
-        // Only show label every 4th hour and only for exact hour (00 minutes)
-        const shouldShowLabel = hours % 4 === 0 && minutes === 0;
-
-        combinedData.push({
-          value: entry.SEK_per_kWh * 100,
-          ...(shouldShowLabel && {
-            label: `${hours.toString().padStart(2, "0")}`,
-          }),
-          frontColor: Colors[colorScheme].chartBar,
-        });
-      });
-    }
-
-    return combinedData;
-  };
-
   if (areaLoading || loading) {
     return (
       <ThemedView style={styles.container}>
@@ -227,7 +129,11 @@ export default function PricesScreen() {
   }
 
   // Calculate chart data and values once
-  const chartData = transformData(prices, tomorrowPrices);
+  const chartData = transformData(
+    prices,
+    tomorrowPrices,
+    colorScheme ?? "light"
+  );
   const maxValue = Math.max(...chartData.map((item) => item.value));
   const minValue = Math.min(...chartData.map((item) => item.value));
   return (
@@ -243,7 +149,7 @@ export default function PricesScreen() {
             / {getAreaName(selectedArea)}
           </ThemedText>
         </ThemedText>
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, marginInline: -12 }}>
           <BarChart
             data={chartData}
             height={200}
@@ -333,34 +239,6 @@ export default function PricesScreen() {
       </ThemedView>
     </ScrollView>
   );
-}
-
-async function fetchPricesForDate(
-  area: string,
-  daysOffset: number = 0
-): Promise<PriceEntry[]> {
-  const now = new Date();
-  const targetDate = new Date(now);
-  targetDate.setDate(now.getDate() + daysOffset);
-
-  const dateStr =
-    targetDate.getFullYear() +
-    "-" +
-    String(targetDate.getMonth() + 1).padStart(2, "0") +
-    "-" +
-    String(targetDate.getDate()).padStart(2, "0");
-
-  const url = `https://www.elprisetjustnu.se/api/v1/prices/${targetDate.getFullYear()}/${dateStr.slice(
-    5
-  )}_${area}.json`;
-  //const url =
-  //  "https://www.elprisetjustnu.se/api/v1/prices/kvartspris_demo.json";
-
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return await response.json();
 }
 
 const styles = StyleSheet.create({
