@@ -1,6 +1,6 @@
 import { Colors } from "@/constants/Colors";
 import type { BarDataPoint, PriceEntry } from "@/types";
-import { isHighlighted, isWithinLastHour } from "./dateUtils";
+import { isHighlighted, keepPreviousHour } from "./dateUtils";
 
 /**
  * Transform price data into chart data points
@@ -17,7 +17,7 @@ export const transformData = (
     const date = new Date(entry.time_start);
 
     // Skip entries that are more than 1 hour in the past
-    if (!isWithinLastHour(entry.time_start)) {
+    if (!keepPreviousHour(entry.time_start)) {
       return;
     }
 

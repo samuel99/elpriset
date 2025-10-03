@@ -12,13 +12,13 @@ export const Colors = {
     background: "#f9f6f1",
     backgroundDark: "#f9f6f1",
     icon: "#687076",
-    chartBar: "#687076",
+    chartBar: "#e7b85987",
   },
   dark: {
     text: "#f0ede9",
     background: "#1e1c1a",
     backgroundDark: "#0f0e0d",
     icon: "#9BA1A6",
-    chartBar: "#9BA1A6",
+    chartBar: "#e7b8594d",
   },
 };

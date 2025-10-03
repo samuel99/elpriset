@@ -6,7 +6,7 @@ import { usePriceArea } from "@/hooks/usePriceArea";
 import { fetchPricesForDate } from "@/services/priceService";
 import type { PriceEntry } from "@/types";
 import { transformData } from "@/utils/chartUtils";
-import { isHighlighted } from "@/utils/dateUtils";
+import { isHighlighted, keepPreviousHour } from "@/utils/dateUtils";
 import {
   formatPrice,
   formatTime,
@@ -149,21 +149,32 @@ export default function PricesScreen() {
             / {getAreaName(selectedArea)}
           </ThemedText>
         </ThemedText>
-        <View style={{ flex: 1, marginInline: -12 }}>
+        <View
+          style={{
+            flex: 1,
+            marginInline: -12,
+            marginBlock: 20,
+          }}
+        >
           <BarChart
             data={chartData}
             height={200}
             barWidth={4}
             spacing={2}
             roundedTop
+            noOfSections={5}
             hideRules
             maxValue={maxValue}
             mostNegativeValue={minValue}
             yAxisThickness={0}
-            hideYAxisText={true}
-            hideOrigin
+            yAxisColor={Colors[colorScheme].text}
+            yAxisTextStyle={{
+              fontSize: 16,
+              textAlign: "right",
+              color: Colors[colorScheme].text,
+            }}
+            xAxisThickness={1}
             autoShiftLabels
-            xAxisThickness={0}
             labelWidth={20}
             xAxisLabelTextStyle={{
               fontSize: 16,
@@ -175,7 +186,7 @@ export default function PricesScreen() {
         </View>
         <ThemedText type="subtitle">Idag</ThemedText>
         <FlatList
-          data={prices}
+          data={prices.filter((item) => keepPreviousHour(item.time_start))}
           style={{ marginInline: -12 }}
           keyExtractor={(item, index) =>
             `today-${item?.time_start || index.toString()}`

@@ -12,12 +12,19 @@ export const isHighlighted = (timeStart: string, timeEnd: string): boolean => {
 };
 
 /**
- * Check if an entry is within the last hour (not too far in the past)
+ * Always keeps at least one complete previous hour
  */
-export const isWithinLastHour = (timeStart: string): boolean => {
+export const keepPreviousHour = (timeStart: string): boolean => {
   const now = getCurrentTime();
-  const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+  // Get the start of the previous hour
+  const previousHourStart = new Date(now);
+  previousHourStart.setHours(now.getHours() - 1);
+  previousHourStart.setMinutes(0);
+  previousHourStart.setSeconds(0);
+  previousHourStart.setMilliseconds(0);
+
   const entryTime = new Date(timeStart);
 
-  return entryTime >= oneHourAgo;
+  return entryTime >= previousHourStart;
 };
