@@ -19,6 +19,7 @@ import {
   FlatList,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
@@ -53,7 +54,7 @@ export default function PricesScreen() {
 
     const subscription = AppState.addEventListener(
       "change",
-      handleAppStateChange
+      handleAppStateChange,
     );
 
     return () => {
@@ -76,7 +77,7 @@ export default function PricesScreen() {
         return [styles.row, styles.oddRow];
       }
     },
-    []
+    [],
   );
 
   const getTextStyle = useCallback((timeStart: string, timeEnd: string) => {
@@ -90,23 +91,91 @@ export default function PricesScreen() {
   // Memoized filtered data to avoid recalculation on every render
   const filteredTodayPrices = useMemo(
     () => prices.filter((item) => keepPreviousHour(item.time_start)),
-    [prices]
+    [prices],
   );
 
   // Memoized chart data and calculations
   const chartData = useMemo(
     () => transformData(prices, tomorrowPrices, colorScheme ?? "light"),
-    [prices, tomorrowPrices, colorScheme]
+    [prices, tomorrowPrices, colorScheme],
   );
 
   const { maxValue, minValue } = useMemo(() => {
     if (chartData.length === 0) return { maxValue: 0, minValue: 0 };
     const values = chartData.map((item) => item.value);
+    const rawMax = Math.max(...values) + 25; // Add some padding to the max value to give place for the tooltip
+    const rawMin = Math.min(...values);
     return {
-      maxValue: Math.max(...values),
-      minValue: Math.min(...values),
+      maxValue: Math.ceil(rawMax / 25) * 25, //Round up to closest 20 for nicer y axis values
+      minValue: Math.floor(rawMin / 20) * 20, //Round down to closest 20 for nicer y axis values
     };
   }, [chartData]);
+
+  // Render tooltip for bars
+  const renderTooltip = useCallback(
+    (item: any, index: number) => {
+      const filteredToday = prices.filter((item) =>
+        keepPreviousHour(item.time_start),
+      );
+      const allPrices = [...filteredToday, ...tomorrowPrices];
+
+      if (index < allPrices.length) {
+        const entry = allPrices[index];
+        return (
+          <View
+            style={{
+              marginBottom: 0,
+              marginLeft: -20,
+              alignItems: "center",
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: Colors.primary,
+                paddingHorizontal: 8,
+                paddingVertical: 6,
+                borderRadius: 6,
+              }}
+            >
+              <Text
+                style={{
+                  color: Colors.primaryAccent,
+                  fontSize: 11,
+                  fontWeight: "600",
+                }}
+              >
+                {formatPrice(entry.SEK_per_kWh)}
+              </Text>
+              <Text
+                style={{
+                  color: Colors.primaryAccent,
+                  fontSize: 10,
+                  fontWeight: "400",
+                }}
+              >
+                {formatTime(entry.time_start)}
+              </Text>
+            </View>
+            <View
+              style={{
+                width: 0,
+                height: 0,
+                marginTop: -1,
+                borderLeftWidth: 6,
+                borderRightWidth: 6,
+                borderTopWidth: 6,
+                borderLeftColor: "transparent",
+                borderRightColor: "transparent",
+                borderTopColor: Colors.primary,
+              }}
+            />
+          </View>
+        );
+      }
+      return null;
+    },
+    [prices, tomorrowPrices],
+  );
 
   // Early returns after all hooks have been called
   if (areaLoading || loading) {
@@ -150,10 +219,10 @@ export default function PricesScreen() {
           <BarChart
             data={chartData}
             height={200}
-            barWidth={4}
-            spacing={2}
-            roundedTop
-            noOfSections={5}
+            barWidth={8}
+            spacing={1}
+            stepValue={50}
+            noOfSections={4}
             hideRules
             maxValue={maxValue}
             mostNegativeValue={minValue}
@@ -173,6 +242,8 @@ export default function PricesScreen() {
               marginInlineStart: -15,
               color: Colors[colorScheme].text,
             }}
+            renderTooltip={renderTooltip}
+            leftShiftForLastIndexTooltip={10}
           />
         </View>
         <ThemedText type="subtitle">Idag</ThemedText>

@@ -8,7 +8,7 @@ import { isHighlighted, keepPreviousHour } from "./dateUtils";
 export const transformData = (
   todayPrices: PriceEntry[],
   tomorrowPrices: PriceEntry[] = [],
-  colorScheme: "light" | "dark"
+  colorScheme: "light" | "dark",
 ): BarDataPoint[] => {
   const combinedData: BarDataPoint[] = [];
 
@@ -30,7 +30,7 @@ export const transformData = (
     combinedData.push({
       value: entry.SEK_per_kWh * 100,
       ...(shouldShowLabel && {
-        label: `${hours.toString().padStart(2, "0")}`,
+        label: `bajs${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`,
       }),
       frontColor: isHighlighted(entry.time_start, entry.time_end)
         ? Colors.primary
