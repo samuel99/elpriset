@@ -30,7 +30,7 @@ export const transformData = (
     combinedData.push({
       value: entry.SEK_per_kWh * 100,
       ...(shouldShowLabel && {
-        label: `bajs${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`,
+        label: `${hours.toString().padStart(2, "0")}`,
       }),
       frontColor: isHighlighted(entry.time_start, entry.time_end)
         ? Colors.primary
