@@ -72,7 +72,7 @@ export default function SettingsScreen() {
 
         <ThemedView style={styles.section}>
           <ThemedText type="subtitle" style={styles.sectionTitle}>
-            Visa prisprognos i graf (beta)
+            Tredagars prisprognos (beta)
           </ThemedText>
           {[
             { value: true, label: "Ja" },

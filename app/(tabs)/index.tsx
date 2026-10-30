@@ -2,7 +2,6 @@ import { PriceChart } from "@/components/PriceChart";
 import { PriceList } from "@/components/PriceRow";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useForecastPreference } from "@/hooks/useForecastPreference";
 import { usePriceArea } from "@/hooks/usePriceArea";
@@ -41,6 +40,12 @@ export default function PricesScreen() {
       transformData(prices, tomorrowPrices, colorScheme, forecastPrices, now),
     [prices, tomorrowPrices, colorScheme, forecastPrices, now],
   );
+  const hasForecastBars = chartData.some(
+    (item) => item.priceEntry && "isForecast" in item.priceEntry,
+  );
+  const showForecastStatus = showForecast && (
+    (forecastLoading && forecastPrices.length === 0) || forecastError || !hasForecastBars
+  );
 
   if (areaLoading || (loading && prices.length === 0)) {
     return (
@@ -74,24 +79,12 @@ export default function PricesScreen() {
           </ThemedText>
         </ThemedText>
         <PriceChart data={chartData} colorScheme={colorScheme} />
-        {showForecast && (
+        {showForecastStatus && (
           <View style={styles.forecastStatus}>
             {forecastLoading && forecastPrices.length === 0 ? (
               <ActivityIndicator size="small" />
             ) : forecastError ? (
               <ThemedText accessibilityRole="alert">{forecastError}</ThemedText>
-            ) : chartData.some(
-                (item) => item.priceEntry && "isForecast" in item.priceEntry,
-              ) ? (
-              <>
-                <View
-                  style={[
-                    styles.forecastSwatch,
-                    { backgroundColor: Colors[colorScheme].forecastBar },
-                  ]}
-                />
-                <ThemedText>Prognos (beta)</ThemedText>
-              </>
             ) : (
               <ThemedText>Ingen prognos tillgänglig.</ThemedText>
             )}
@@ -137,10 +130,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     marginBottom: 16,
-  },
-  forecastSwatch: {
-    width: 12,
-    height: 12,
   },
   container: { flex: 1, paddingHorizontal: 20 },
   tomorrowTitle: {
