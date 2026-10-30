@@ -5,7 +5,12 @@ import { formatPrice, formatTime } from "@/utils/priceUtils";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-export function PriceTooltip({ item, barWidth = 8, leftOffset = Infinity, viewportWidth }: {
+export function PriceTooltip({
+  item,
+  barWidth = 8,
+  leftOffset = Infinity,
+  viewportWidth,
+}: {
   item: BarDataPoint;
   barWidth?: number;
   leftOffset?: number;
@@ -13,9 +18,10 @@ export function PriceTooltip({ item, barWidth = 8, leftOffset = Infinity, viewpo
 }) {
   const [width, setWidth] = useState(0);
   const leftShift = Math.max(0, (width - barWidth) / 2 - leftOffset);
-  const rightShift = viewportWidth === undefined
-    ? 0
-    : Math.min(0, viewportWidth - leftOffset - (width + barWidth) / 2);
+  const rightShift =
+    viewportWidth === undefined
+      ? 0
+      : Math.min(0, viewportWidth - leftOffset - (width + barWidth) / 2);
   const edgeShift = leftShift || rightShift;
   const entry = item.priceEntry;
   if (!entry) return null;
@@ -28,10 +34,14 @@ export function PriceTooltip({ item, barWidth = 8, leftOffset = Infinity, viewpo
         <Text style={styles.price}>{formatPrice(entry.SEK_per_kWh)}</Text>
         <Text style={styles.time}>{formatTime(entry.time_start)}</Text>
         {"isForecast" in entry && (
-          <Text style={styles.time}>Prognos {formatMarketDate(new Date(entry.time_start))}</Text>
+          <Text style={styles.time}>
+            Prognos {formatMarketDate(new Date(entry.time_start))}
+          </Text>
         )}
       </View>
-      <View style={[styles.arrow, { transform: [{ translateX: -edgeShift }] }]} />
+      <View
+        style={[styles.arrow, { transform: [{ translateX: -edgeShift }] }]}
+      />
     </View>
   );
 }

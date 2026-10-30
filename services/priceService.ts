@@ -1,6 +1,10 @@
 import { API_CONFIG, buildPriceUrl } from "@/config/api";
 import type { ForecastPriceEntry, PriceArea, PriceEntry } from "@/types";
-import { addMarketDays, getMarketDateKey, QUARTER_HOUR_MS } from "@/utils/dateUtils";
+import {
+    addMarketDays,
+    getMarketDateKey,
+    QUARTER_HOUR_MS,
+} from "@/utils/dateUtils";
 import { fetchJson } from "./apiClient";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -37,7 +41,11 @@ export async function fetchForecastPrices(
       throw new Error("Invalid forecast points");
     }
     return day.points.map((point: unknown) => {
-      if (!isRecord(point) || !isTimestamp(point.ts_utc) || !isFiniteNumber(point.ore_kwh)) {
+      if (
+        !isRecord(point) ||
+        !isTimestamp(point.ts_utc) ||
+        !isFiniteNumber(point.ore_kwh)
+      ) {
         throw new Error("Invalid forecast point");
       }
       const start = Date.parse(point.ts_utc);

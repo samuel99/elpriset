@@ -11,9 +11,10 @@ export const API_CONFIG = {
   FORECAST_URL:
     process.env.EXPO_PUBLIC_API_URL_FORECAST ||
     "https://wolta.se/api/v1/prices/forecast",
-  TIMEOUT: Number(process.env.EXPO_PUBLIC_API_TIMEOUT) > 0
-    ? Number(process.env.EXPO_PUBLIC_API_TIMEOUT)
-    : 5000,
+  TIMEOUT:
+    Number(process.env.EXPO_PUBLIC_API_TIMEOUT) > 0
+      ? Number(process.env.EXPO_PUBLIC_API_TIMEOUT)
+      : 5000,
 } as const;
 
 /**

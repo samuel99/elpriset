@@ -38,11 +38,11 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 Use `.env.example` as the reference for local `.env` configuration. EAS build environments need the same public variables:
 
-| Variable | Purpose | Default |
-| --- | --- | --- |
-| `EXPO_PUBLIC_API_URL` | Published-price API base URL | `https://www.elprisetjustnu.se/api/v1` |
-| `EXPO_PUBLIC_API_URL_FORECAST` | Forecast endpoint; the app adds `?zone=SE1` through `SE4` | `https://wolta.se/api/v1/prices/forecast` |
-| `EXPO_PUBLIC_API_TIMEOUT` | Request timeout in milliseconds, including the response body | `5000` |
+| Variable                       | Purpose                                                      | Default                                   |
+| ------------------------------ | ------------------------------------------------------------ | ----------------------------------------- |
+| `EXPO_PUBLIC_API_URL`          | Published-price API base URL                                 | `https://www.elprisetjustnu.se/api/v1`    |
+| `EXPO_PUBLIC_API_URL_FORECAST` | Forecast endpoint; the app adds `?zone=SE1` through `SE4`    | `https://wolta.se/api/v1/prices/forecast` |
+| `EXPO_PUBLIC_API_TIMEOUT`      | Request timeout in milliseconds, including the response body | `5000`                                    |
 
 `EXPO_PUBLIC_` values are included in the app bundle and must not contain secrets. `EXPO_PUBLIC_API_RETRY_ATTEMPTS` is no longer used and can be removed from local/EAS environments.
 

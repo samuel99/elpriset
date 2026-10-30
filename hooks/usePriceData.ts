@@ -1,5 +1,8 @@
 import { ApiError } from "@/services/apiClient";
-import { fetchForecastPrices, fetchPricesForDate } from "@/services/priceService";
+import {
+    fetchForecastPrices,
+    fetchPricesForDate,
+} from "@/services/priceService";
 import type { ForecastPriceEntry, PriceArea, PriceEntry } from "@/types";
 import { getMarketDateKey, QUARTER_HOUR_MS } from "@/utils/dateUtils";
 import { useCallback, useEffect, useState } from "react";
@@ -18,22 +21,35 @@ function usePriceRequest<Entry>(
   fetchData: (signal: AbortSignal) => Promise<Entry[]>,
 ) {
   const [state, setState] = useState<PriceRequest<Entry>>({
-    key: null, data: [], loading: true, error: null,
+    key: null,
+    data: [],
+    loading: true,
+    error: null,
   });
 
   useEffect(() => {
     if (!key) return;
     const controller = new AbortController();
     setState((previous) => ({
-      key, data: previous.key === key ? previous.data : [], loading: true, error: null,
+      key,
+      data: previous.key === key ? previous.data : [],
+      loading: true,
+      error: null,
     }));
     fetchData(controller.signal).then(
       (data) => {
-        if (!controller.signal.aborted) setState({ key, data, loading: false, error: null });
+        if (!controller.signal.aborted)
+          setState({ key, data, loading: false, error: null });
       },
       (error: unknown) => {
         if (!controller.signal.aborted) {
-          setState({ key, data: [], loading: false, error: error instanceof Error ? error.message : "Unknown error occurred" });
+          setState({
+            key,
+            data: [],
+            loading: false,
+            error:
+              error instanceof Error ? error.message : "Unknown error occurred",
+          });
         }
       },
     );
@@ -70,32 +86,60 @@ export const usePriceData = (
   const now = useCurrentTime();
   const dateKey = getMarketDateKey(now);
   const [revision, setRevision] = useState(0);
-  const requestKey = selectedArea && !areaLoading ? `${selectedArea}:${dateKey}` : null;
+  const requestKey =
+    selectedArea && !areaLoading ? `${selectedArea}:${dateKey}` : null;
   const refreshKey = `${Math.floor(now.getTime() / QUARTER_HOUR_MS)}:${revision}`;
 
-  const fetchToday = useCallback((signal: AbortSignal) => {
-    if (!selectedArea) return Promise.resolve([]);
-    return fetchPricesForDate(selectedArea, 0, signal, new Date(`${dateKey}T12:00:00Z`));
-  }, [selectedArea, dateKey]);
+  const fetchToday = useCallback(
+    (signal: AbortSignal) => {
+      if (!selectedArea) return Promise.resolve([]);
+      return fetchPricesForDate(
+        selectedArea,
+        0,
+        signal,
+        new Date(`${dateKey}T12:00:00Z`),
+      );
+    },
+    [selectedArea, dateKey],
+  );
 
-  const fetchTomorrow = useCallback(async (signal: AbortSignal) => {
-    if (!selectedArea) return [];
-    try {
-      return await fetchPricesForDate(selectedArea, 1, signal, new Date(`${dateKey}T12:00:00Z`));
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 404) return [];
-      throw error;
-    }
-  }, [selectedArea, dateKey]);
+  const fetchTomorrow = useCallback(
+    async (signal: AbortSignal) => {
+      if (!selectedArea) return [];
+      try {
+        return await fetchPricesForDate(
+          selectedArea,
+          1,
+          signal,
+          new Date(`${dateKey}T12:00:00Z`),
+        );
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) return [];
+        throw error;
+      }
+    },
+    [selectedArea, dateKey],
+  );
 
-  const fetchForecast = useCallback((signal: AbortSignal) => {
-    if (!selectedArea) return Promise.resolve([]);
-    return fetchForecastPrices(selectedArea, signal);
-  }, [selectedArea]);
+  const fetchForecast = useCallback(
+    (signal: AbortSignal) => {
+      if (!selectedArea) return Promise.resolve([]);
+      return fetchForecastPrices(selectedArea, signal);
+    },
+    [selectedArea],
+  );
 
   const today = usePriceRequest<PriceEntry>(requestKey, refreshKey, fetchToday);
-  const tomorrow = usePriceRequest<PriceEntry>(requestKey, refreshKey, fetchTomorrow);
-  const forecast = usePriceRequest<ForecastPriceEntry>(showForecast ? requestKey : null, refreshKey, fetchForecast);
+  const tomorrow = usePriceRequest<PriceEntry>(
+    requestKey,
+    refreshKey,
+    fetchTomorrow,
+  );
+  const forecast = usePriceRequest<ForecastPriceEntry>(
+    showForecast ? requestKey : null,
+    refreshKey,
+    fetchForecast,
+  );
   const refetch = useCallback(() => setRevision((value) => value + 1), []);
 
   return {

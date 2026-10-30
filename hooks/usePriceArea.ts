@@ -5,7 +5,7 @@ import { usePreference } from "./usePreference";
 const areaStore = createPreferenceStore(
   "selected_price_area",
   DEFAULT_PRICE_AREA,
-  (saved) => isPriceArea(saved) ? saved : DEFAULT_PRICE_AREA,
+  (saved) => (isPriceArea(saved) ? saved : DEFAULT_PRICE_AREA),
 );
 
 export function usePriceArea() {

@@ -30,7 +30,8 @@ export function addMarketDays(dateKey: string, days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
-export const formatMarketTime = (date: Date): string => marketTimeFormatter.format(date);
+export const formatMarketTime = (date: Date): string =>
+  marketTimeFormatter.format(date);
 
 export const formatMarketDate = (date: Date): string =>
   date.toLocaleDateString("sv-SE", {
@@ -43,12 +44,14 @@ export const isHighlighted = (
   timeStart: string,
   timeEnd: string,
   now: Date = getCurrentTime(),
-): boolean => now.getTime() >= Date.parse(timeStart) && now.getTime() < Date.parse(timeEnd);
+): boolean =>
+  now.getTime() >= Date.parse(timeStart) && now.getTime() < Date.parse(timeEnd);
 
 export const keepPreviousHour = (
   timeStart: string,
   now: Date = getCurrentTime(),
 ): boolean => {
-  const previousHourStart = Math.floor(now.getTime() / 3600000) * 3600000 - 3600000;
+  const previousHourStart =
+    Math.floor(now.getTime() / 3600000) * 3600000 - 3600000;
   return Date.parse(timeStart) >= previousHourStart;
 };

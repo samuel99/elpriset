@@ -15,7 +15,10 @@ const MAPPING = {
   "chart.line.uptrend.xyaxis": "graph",
   "gearshape.fill": "settings",
   "checkmark.circle.fill": "check",
-} as const satisfies Record<string, ComponentProps<typeof SimpleLineIcons>["name"]>;
+} as const satisfies Record<
+  string,
+  ComponentProps<typeof SimpleLineIcons>["name"]
+>;
 
 /**
  * SF Symbol-style names mapped to SimpleLineIcons on every platform.

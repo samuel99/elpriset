@@ -10,13 +10,8 @@ import { usePriceData } from "@/hooks/usePriceData";
 import { transformData } from "@/utils/chartUtils";
 import { keepPreviousHour } from "@/utils/dateUtils";
 import { getAreaName } from "@/utils/priceUtils";
-import React, { useMemo } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { useMemo } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 
 export default function PricesScreen() {
   const { selectedArea, isLoading: areaLoading } = usePriceArea();
@@ -43,13 +38,7 @@ export default function PricesScreen() {
 
   const chartData = useMemo(
     () =>
-      transformData(
-        prices,
-        tomorrowPrices,
-        colorScheme,
-        forecastPrices,
-        now,
-      ),
+      transformData(prices, tomorrowPrices, colorScheme, forecastPrices, now),
     [prices, tomorrowPrices, colorScheme, forecastPrices, now],
   );
 
@@ -121,7 +110,11 @@ export default function PricesScreen() {
             <ThemedText>Hämtar morgondagens priser...</ThemedText>
           </ThemedView>
         ) : tomorrowPrices.length > 0 ? (
-          <PriceList prices={tomorrowPrices} now={now} style={styles.tomorrowList} />
+          <PriceList
+            prices={tomorrowPrices}
+            now={now}
+            style={styles.tomorrowList}
+          />
         ) : tomorrowError ? (
           <ThemedText accessibilityRole="alert" style={styles.messageText}>
             Kunde inte hämta morgondagens priser.

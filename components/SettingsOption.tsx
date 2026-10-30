@@ -3,7 +3,12 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
-export function SettingsOption({ label, selected, disabled = false, onPress }: {
+export function SettingsOption({
+  label,
+  selected,
+  disabled = false,
+  onPress,
+}: {
   label: string;
   selected: boolean;
   disabled?: boolean;
@@ -20,9 +25,17 @@ export function SettingsOption({ label, selected, disabled = false, onPress }: {
       accessibilityState={{ checked: selected, disabled }}
     >
       <View style={styles.content}>
-        <ThemedText style={[styles.label, selected && styles.selectedLabel]}>{label}</ThemedText>
+        <ThemedText style={[styles.label, selected && styles.selectedLabel]}>
+          {label}
+        </ThemedText>
       </View>
-      {selected && <IconSymbol name="checkmark.circle.fill" size={16} color={Colors.primaryAccent} />}
+      {selected && (
+        <IconSymbol
+          name="checkmark.circle.fill"
+          size={16}
+          color={Colors.primaryAccent}
+        />
+      )}
     </TouchableOpacity>
   );
 }
@@ -40,7 +53,10 @@ const styles = StyleSheet.create({
     borderColor: "rgba(123, 123, 123, 0.25)",
     boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
   },
-  selectedOption: { borderColor: Colors.primary, backgroundColor: Colors.primary },
+  selectedOption: {
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primary,
+  },
   content: { flex: 1 },
   label: { fontSize: 16 },
   selectedLabel: { color: Colors.primaryAccent },

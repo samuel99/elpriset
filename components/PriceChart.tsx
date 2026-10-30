@@ -3,13 +3,22 @@ import { Colors } from "@/constants/Colors";
 import type { BarDataPoint } from "@/types";
 import { getChartBounds } from "@/utils/chartUtils";
 import { useRef, useState } from "react";
-import { StyleSheet, useWindowDimensions, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
+import {
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
 const BAR_WIDTH = 8;
 const BAR_SPACING = 1;
 
-export function PriceChart({ data, colorScheme }: {
+export function PriceChart({
+  data,
+  colorScheme,
+}: {
   data: BarDataPoint[];
   colorScheme: "light" | "dark";
 }) {
@@ -29,7 +38,9 @@ export function PriceChart({ data, colorScheme }: {
   return (
     <View
       style={styles.container}
-      onLayout={(event) => setChartWidth(Math.max(event.nativeEvent.layout.width - 44, 1))}
+      onLayout={(event) =>
+        setChartWidth(Math.max(event.nativeEvent.layout.width - 44, 1))
+      }
     >
       <BarChart
         data={data}
@@ -51,7 +62,11 @@ export function PriceChart({ data, colorScheme }: {
         xAxisThickness={1}
         autoShiftLabels
         labelWidth={44}
-        xAxisLabelTextStyle={[styles.axisText, styles.xAxisText, { color: textColor }]}
+        xAxisLabelTextStyle={[
+          styles.axisText,
+          styles.xAxisText,
+          { color: textColor },
+        ]}
         renderTooltip={renderTooltip}
         autoCenterTooltip
         scrollEventThrottle={16}

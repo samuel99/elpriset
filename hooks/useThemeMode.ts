@@ -11,7 +11,7 @@ export function useThemeMode() {
   const state = usePreference(themeStore);
   const themeMode = state.value;
   const actualColorScheme =
-    themeMode === "system" ? systemColorScheme ?? "light" : themeMode;
+    themeMode === "system" ? (systemColorScheme ?? "light") : themeMode;
 
   return {
     themeMode,

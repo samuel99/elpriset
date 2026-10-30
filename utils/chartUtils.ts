@@ -1,11 +1,16 @@
 import { Colors } from "@/constants/Colors";
-import type { BarDataPoint, ChartPriceEntry, ForecastPriceEntry, PriceEntry } from "@/types";
+import type {
+    BarDataPoint,
+    ChartPriceEntry,
+    ForecastPriceEntry,
+    PriceEntry,
+} from "@/types";
 import {
-  formatMarketTime,
-  getMarketDateKey,
-  isHighlighted,
-  keepPreviousHour,
-  QUARTER_HOUR_MS,
+    formatMarketTime,
+    getMarketDateKey,
+    isHighlighted,
+    keepPreviousHour,
+    QUARTER_HOUR_MS,
 } from "./dateUtils";
 
 export const mergePriceIntervals = (
@@ -53,18 +58,29 @@ export const transformData = (
   forecastPrices: ForecastPriceEntry[] = [],
   now: Date = new Date(),
 ): BarDataPoint[] => {
-  const entries = mergePriceIntervals(todayPrices, tomorrowPrices, forecastPrices, now);
+  const entries = mergePriceIntervals(
+    todayPrices,
+    tomorrowPrices,
+    forecastPrices,
+    now,
+  );
   if (entries.length === 0) return [];
 
   const slots = new Map<number, ChartPriceEntry>();
   entries.forEach((entry) => {
     const end = Date.parse(entry.time_end);
-    for (let start = Date.parse(entry.time_start); start < end; start += QUARTER_HOUR_MS) {
+    for (
+      let start = Date.parse(entry.time_start);
+      start < end;
+      start += QUARTER_HOUR_MS
+    ) {
       if (!slots.has(start)) {
         slots.set(start, {
           ...entry,
           time_start: new Date(start).toISOString(),
-          time_end: new Date(Math.min(start + QUARTER_HOUR_MS, end)).toISOString(),
+          time_end: new Date(
+            Math.min(start + QUARTER_HOUR_MS, end),
+          ).toISOString(),
         });
       }
     }
@@ -73,16 +89,26 @@ export const transformData = (
   const times = [...slots.keys()];
   const combinedData: BarDataPoint[] = [];
   const lastTime = Math.max(...times);
-  for (let time = Math.min(...times); time <= lastTime; time += QUARTER_HOUR_MS) {
+  for (
+    let time = Math.min(...times);
+    time <= lastTime;
+    time += QUARTER_HOUR_MS
+  ) {
     const entry = slots.get(time);
     const date = new Date(time);
     const clock = formatMarketTime(date);
     const hours = Number(clock.slice(0, 2));
-    const label = clock.endsWith(":00") && hours % 4 === 0
-      ? forecastPrices.length > 0 && hours === 0
-        ? getMarketDateKey(date).slice(5).split("-").reverse().map(Number).join("/")
-        : clock.slice(0, 2)
-      : undefined;
+    const label =
+      clock.endsWith(":00") && hours % 4 === 0
+        ? forecastPrices.length > 0 && hours === 0
+          ? getMarketDateKey(date)
+              .slice(5)
+              .split("-")
+              .reverse()
+              .map(Number)
+              .join("/")
+          : clock.slice(0, 2)
+        : undefined;
     combinedData.push({
       value: entry ? entry.SEK_per_kWh * 100 : 0,
       priceEntry: entry,
@@ -101,7 +127,9 @@ export const transformData = (
 };
 
 export const getChartBounds = (data: BarDataPoint[]) => {
-  const values = data.filter((entry) => entry.priceEntry).map((entry) => entry.value);
+  const values = data
+    .filter((entry) => entry.priceEntry)
+    .map((entry) => entry.value);
   return {
     maxValue: Math.ceil((Math.max(0, ...values) + 25) / 25) * 25,
     minValue: Math.floor(Math.min(0, ...values) / 20) * 20,
