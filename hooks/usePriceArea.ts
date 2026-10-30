@@ -1,79 +1,19 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { DEFAULT_PRICE_AREA, isPriceArea } from "@/constants/PriceAreas";
+import { createPreferenceStore } from "@/utils/createPreferenceStore";
+import { usePreference } from "./usePreference";
 
-const STORAGE_KEY = "selected_price_area";
-const DEFAULT_AREA = "SE3";
-
-// Global state to share between all instances
-let globalSelectedArea = DEFAULT_AREA;
-let globalIsLoading = true;
-let subscribers: Array<(area: string) => void> = [];
-
-// Function to notify all subscribers of state changes
-const notifySubscribers = (newArea: string) => {
-  globalSelectedArea = newArea;
-  subscribers.forEach((callback) => callback(newArea));
-};
+const areaStore = createPreferenceStore(
+  "selected_price_area",
+  DEFAULT_PRICE_AREA,
+  (saved) => isPriceArea(saved) ? saved : DEFAULT_PRICE_AREA,
+);
 
 export function usePriceArea() {
-  const [selectedArea, setSelectedArea] = useState<string>(globalSelectedArea);
-  const [isLoading, setIsLoading] = useState(globalIsLoading);
-
-  useEffect(() => {
-    // Subscribe to global state changes
-    const unsubscribe = (newArea: string) => {
-      setSelectedArea(newArea);
-    };
-
-    subscribers.push(unsubscribe);
-
-    // Load initial data only once
-    if (globalIsLoading) {
-      loadSelectedArea();
-    } else {
-      setIsLoading(false);
-    }
-
-    // Cleanup subscription on unmount
-    return () => {
-      subscribers = subscribers.filter((sub) => sub !== unsubscribe);
-    };
-  }, []);
-
-  const loadSelectedArea = async () => {
-    try {
-      const saved = await AsyncStorage.getItem(STORAGE_KEY);
-      const areaToSet = saved || DEFAULT_AREA;
-
-      globalSelectedArea = areaToSet;
-      globalIsLoading = false;
-
-      setSelectedArea(areaToSet);
-      setIsLoading(false);
-
-      // Notify other subscribers
-      notifySubscribers(areaToSet);
-    } catch (error) {
-      console.log("Error loading selected area:", error);
-      globalIsLoading = false;
-      setIsLoading(false);
-    }
-  };
-
-  const saveSelectedArea = async (area: string) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, area);
-
-      // Update global state and notify all subscribers
-      notifySubscribers(area);
-    } catch (error) {
-      console.log("Error saving selected area:", error);
-    }
-  };
-
+  const state = usePreference(areaStore);
   return {
-    selectedArea,
-    setSelectedArea: saveSelectedArea,
-    isLoading,
+    selectedArea: state.value,
+    setSelectedArea: areaStore.setValue,
+    isLoading: state.isLoading,
+    error: state.error,
   };
 }

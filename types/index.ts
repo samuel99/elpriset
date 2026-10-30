@@ -3,15 +3,10 @@
  */
 
 // Core data types
-export type { PriceArea, PriceEntry, ThemeMode } from "./data";
+export type { ChartPriceEntry, ForecastPriceEntry, PriceArea, PriceEntry, ThemeMode } from "./data";
 
 // Chart types
-export type { BarDataPoint, ChartConfig, ChartTheme } from "./chart";
+export type { BarDataPoint } from "./chart";
 
 // UI types
-export type {
-  ColorScheme,
-  PriceAreaOption,
-  TabConfig,
-  ThemeOption,
-} from "./ui";
+export type { PriceAreaOption, ThemeOption } from "./ui";

@@ -1,30 +1,54 @@
-import { getCurrentTime } from "./priceUtils";
+export const MARKET_TIME_ZONE = "Europe/Stockholm";
+export const QUARTER_HOUR_MS = 15 * 60 * 1000;
 
-/**
- * Check if a time period is currently highlighted (active)
- */
-export const isHighlighted = (timeStart: string, timeEnd: string): boolean => {
-  const now = getCurrentTime();
-  const priceStart = new Date(timeStart);
-  const priceEnd = new Date(timeEnd);
+const marketDateFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: MARKET_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
 
-  return now >= priceStart && now < priceEnd;
-};
+const marketTimeFormatter = new Intl.DateTimeFormat("sv-SE", {
+  timeZone: MARKET_TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
 
-/**
- * Always keeps at least one complete previous hour
- */
-export const keepPreviousHour = (timeStart: string): boolean => {
-  const now = getCurrentTime();
+export const getCurrentTime = () => new Date();
 
-  // Get the start of the previous hour
-  const previousHourStart = new Date(now);
-  previousHourStart.setHours(now.getHours() - 1);
-  previousHourStart.setMinutes(0);
-  previousHourStart.setSeconds(0);
-  previousHourStart.setMilliseconds(0);
+export function getMarketDateKey(date: Date): string {
+  const parts = marketDateFormatter.formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((entry) => entry.type === type)!.value;
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
 
-  const entryTime = new Date(timeStart);
+export function addMarketDays(dateKey: string, days: number): string {
+  const date = new Date(`${dateKey}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
 
-  return entryTime >= previousHourStart;
+export const formatMarketTime = (date: Date): string => marketTimeFormatter.format(date);
+
+export const formatMarketDate = (date: Date): string =>
+  date.toLocaleDateString("sv-SE", {
+    timeZone: MARKET_TIME_ZONE,
+    day: "numeric",
+    month: "short",
+  });
+
+export const isHighlighted = (
+  timeStart: string,
+  timeEnd: string,
+  now: Date = getCurrentTime(),
+): boolean => now.getTime() >= Date.parse(timeStart) && now.getTime() < Date.parse(timeEnd);
+
+export const keepPreviousHour = (
+  timeStart: string,
+  now: Date = getCurrentTime(),
+): boolean => {
+  const previousHourStart = Math.floor(now.getTime() / 3600000) * 3600000 - 3600000;
+  return Date.parse(timeStart) >= previousHourStart;
 };
