@@ -43,9 +43,11 @@ export default function PricesScreen() {
   const hasForecastBars = chartData.some(
     (item) => item.priceEntry && "isForecast" in item.priceEntry,
   );
-  const showForecastStatus = showForecast && (
-    (forecastLoading && forecastPrices.length === 0) || forecastError || !hasForecastBars
-  );
+  const showForecastStatus =
+    showForecast &&
+    ((forecastLoading && forecastPrices.length === 0) ||
+      forecastError ||
+      !hasForecastBars);
 
   if (areaLoading || (loading && prices.length === 0)) {
     return (
