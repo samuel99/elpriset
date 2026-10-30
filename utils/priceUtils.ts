@@ -2,23 +2,16 @@
  * Utility functions for price formatting and time operations
  */
 
-/**
- * Get current time with simulation support
- */
-export const getCurrentTime = () => {
-  //return new Date("2025-08-12T09:06:00"); // Simulate a date for testing
-  return new Date();
-};
+import type { PriceArea } from "@/types";
+import { formatMarketTime } from "./dateUtils";
+
+export { getCurrentTime } from "./dateUtils";
 
 /**
  * Format time from ISO string to HH:MM format
  */
 export const formatTime = (timeStart: string): string => {
-  const hour = new Date(timeStart).getHours();
-  const minutes = new Date(timeStart).getMinutes();
-  return `${hour.toString().padStart(2, "0")}:${minutes
-    .toString()
-    .padStart(2, "0")}`;
+  return formatMarketTime(new Date(timeStart));
 };
 
 /**
@@ -34,12 +27,4 @@ export const formatPrice = (pricePerKWh: number): string => {
 /**
  * Get area display name
  */
-export const getAreaName = (area: string): string => {
-  const names: Record<string, string> = {
-    SE1: "SE1",
-    SE2: "SE2",
-    SE3: "SE3",
-    SE4: "SE4",
-  };
-  return names[area] || area;
-};
+export const getAreaName = (area: PriceArea): string => area;

@@ -1,14 +1,9 @@
 // Fallback for using SimpleLineIcons on Android and web.
 
 import SimpleLineIcons from "@expo/vector-icons/SimpleLineIcons";
-import { SymbolViewProps, SymbolWeight } from "expo-symbols";
-import { ComponentProps } from "react";
-import { OpaqueColorValue, type StyleProp, type TextStyle } from "react-native";
-
-type IconMapping = Record<
-  SymbolViewProps["name"],
-  ComponentProps<typeof SimpleLineIcons>["name"]
->;
+import type { SymbolWeight } from "expo-symbols";
+import type { ComponentProps } from "react";
+import type { StyleProp, TextStyle } from "react-native";
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
@@ -20,12 +15,13 @@ const MAPPING = {
   "chart.line.uptrend.xyaxis": "graph",
   "gearshape.fill": "settings",
   "checkmark.circle.fill": "check",
-} as IconMapping;
+} as const satisfies Record<
+  string,
+  ComponentProps<typeof SimpleLineIcons>["name"]
+>;
 
 /**
- * An icon component that uses native SF Symbols on iOS, and SimpleLineIcons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to SimpleLineIcons.
+ * SF Symbol-style names mapped to SimpleLineIcons on every platform.
  */
 export function IconSymbol({
   name,
@@ -35,16 +31,15 @@ export function IconSymbol({
 }: {
   name: IconSymbolName;
   size?: number;
-  color: string | OpaqueColorValue;
+  color: TextStyle["color"];
   style?: StyleProp<TextStyle>;
   weight?: SymbolWeight;
 }) {
   return (
     <SimpleLineIcons
-      color={color}
       size={size}
       name={MAPPING[name]}
-      style={style}
+      style={[{ color: color ?? undefined }, style]}
     />
   );
 }

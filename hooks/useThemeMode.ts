@@ -1,45 +1,23 @@
 import type { ThemeMode } from "@/types";
-import { ThemeManager } from "@/utils/ThemeManager";
-import { useEffect, useState } from "react";
+import { themeStore } from "@/utils/ThemeManager";
 import { useColorScheme as useSystemColorScheme } from "react-native";
+import { usePreference } from "./usePreference";
 
 // Re-export ThemeMode for convenience
 export type { ThemeMode };
 
 export function useThemeMode() {
   const systemColorScheme = useSystemColorScheme();
-  const [themeMode, setThemeMode] = useState<ThemeMode>(
-    ThemeManager.getThemeMode()
-  );
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Subscribe to theme changes
-    const unsubscribe = ThemeManager.subscribe(() => {
-      setThemeMode(ThemeManager.getThemeMode());
-    });
-
-    // Load initial theme
-    ThemeManager.loadTheme().then(() => {
-      setThemeMode(ThemeManager.getThemeMode());
-      setIsLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  // Calculate actual color scheme
+  const state = usePreference(themeStore);
+  const themeMode = state.value;
   const actualColorScheme =
-    themeMode === "system" ? systemColorScheme : themeMode;
-
-  const setThemeModeWrapper = (mode: ThemeMode) => {
-    ThemeManager.setThemeMode(mode);
-  };
+    themeMode === "system" ? (systemColorScheme ?? "light") : themeMode;
 
   return {
     themeMode,
-    setThemeMode: setThemeModeWrapper,
+    setThemeMode: themeStore.setValue,
     actualColorScheme,
-    isLoading,
+    isLoading: state.isLoading,
+    error: state.error,
   };
 }

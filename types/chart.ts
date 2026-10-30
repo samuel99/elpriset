@@ -1,3 +1,5 @@
+import type { ChartPriceEntry } from "./data";
+
 /**
  * Chart-related types for data visualization
  */
@@ -9,25 +11,6 @@ export type BarDataPoint = {
   value: number;
   label?: string;
   frontColor?: string;
-};
-
-/**
- * Chart configuration options
- */
-export type ChartConfig = {
-  height: number;
-  barWidth: number;
-  spacing: number;
-  maxValue?: number;
-  minValue?: number;
-};
-
-/**
- * Chart theme colors
- */
-export type ChartTheme = {
-  barColor: string;
-  highlightColor: string;
-  futureColor: string;
-  backgroundColor: string;
+  priceEntry?: ChartPriceEntry;
+  disablePress?: boolean;
 };

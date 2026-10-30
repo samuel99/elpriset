@@ -13,6 +13,7 @@ export const Colors = {
     backgroundDark: "#f9f6f1",
     icon: "#687076",
     chartBar: "#e7b85987",
+    forecastBar: "#718574",
   },
   dark: {
     text: "#f0ede9",
@@ -20,5 +21,6 @@ export const Colors = {
     backgroundDark: "#0f0e0d",
     icon: "#9BA1A6",
     chartBar: "#e7b8594d",
+    forecastBar: "#A2B5A4",
   },
 };

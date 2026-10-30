@@ -1,31 +1,14 @@
+import { SettingsOption } from "@/components/SettingsOption";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
+import { PRICE_AREAS } from "@/constants/PriceAreas";
+import { useForecastPreference } from "@/hooks/useForecastPreference";
 import { usePriceArea } from "@/hooks/usePriceArea";
 import { useThemeMode } from "@/hooks/useThemeMode";
-import React from "react";
-import {
-  Linking,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { Linking, ScrollView, StyleSheet } from "react-native";
 
-import type { PriceAreaOption, ThemeOption } from "@/types";
-
-const PRICE_AREAS: PriceAreaOption[] = [
-  { value: "SE1", label: "SE1, Norra Sverige" },
-  {
-    value: "SE2",
-    label: "SE2, Norra Mellansverige",
-  },
-  {
-    value: "SE3",
-    label: "SE3, Södra Mellansverige",
-  },
-  { value: "SE4", label: "SE4, Södra Sverige" },
-];
+import type { ThemeOption } from "@/types";
 
 const THEME_OPTIONS: ThemeOption[] = [
   {
@@ -43,8 +26,24 @@ const THEME_OPTIONS: ThemeOption[] = [
 ];
 
 export default function SettingsScreen() {
-  const { selectedArea, setSelectedArea } = usePriceArea();
-  const { themeMode, setThemeMode, isLoading: themeLoading } = useThemeMode();
+  const {
+    selectedArea,
+    setSelectedArea,
+    isLoading: areaLoading,
+    error: areaError,
+  } = usePriceArea();
+  const {
+    showForecast,
+    setShowForecast,
+    isLoading: forecastLoading,
+    error: forecastError,
+  } = useForecastPreference();
+  const {
+    themeMode,
+    setThemeMode,
+    isLoading: themeLoading,
+    error: themeError,
+  } = useThemeMode();
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -58,33 +57,38 @@ export default function SettingsScreen() {
             Elprisområde
           </ThemedText>
           {PRICE_AREAS.map((area) => (
-            <TouchableOpacity
+            <SettingsOption
               key={area.value}
-              style={[
-                styles.option,
-                selectedArea === area.value && styles.selectedOption,
-              ]}
+              label={area.label}
+              selected={selectedArea === area.value}
+              disabled={areaLoading}
               onPress={() => setSelectedArea(area.value)}
-            >
-              <ThemedView style={styles.optionContent}>
-                <ThemedText
-                  style={[
-                    styles.optionLabel,
-                    selectedArea === area.value && styles.selectedOptionLabel,
-                  ]}
-                >
-                  {area.label}
-                </ThemedText>
-              </ThemedView>
-              {selectedArea === area.value && (
-                <IconSymbol
-                  name="checkmark.circle.fill"
-                  size={16}
-                  color={Colors.primaryAccent}
-                />
-              )}
-            </TouchableOpacity>
+            />
           ))}
+          {areaError && (
+            <ThemedText accessibilityRole="alert">{areaError}</ThemedText>
+          )}
+        </ThemedView>
+
+        <ThemedView style={styles.section}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Tredagars prisprognos (beta)
+          </ThemedText>
+          {[
+            { value: true, label: "Ja" },
+            { value: false, label: "Nej" },
+          ].map((option) => (
+            <SettingsOption
+              key={option.label}
+              label={option.label}
+              selected={showForecast === option.value}
+              onPress={() => setShowForecast(option.value)}
+              disabled={forecastLoading}
+            />
+          ))}
+          {forecastError && (
+            <ThemedText accessibilityRole="alert">{forecastError}</ThemedText>
+          )}
         </ThemedView>
 
         <ThemedView style={styles.section}>
@@ -92,34 +96,17 @@ export default function SettingsScreen() {
             Utseende
           </ThemedText>
           {THEME_OPTIONS.map((option) => (
-            <TouchableOpacity
+            <SettingsOption
               key={option.value}
-              style={[
-                styles.option,
-                themeMode === option.value && styles.selectedOption,
-              ]}
+              label={option.label}
+              selected={themeMode === option.value}
               onPress={() => setThemeMode(option.value)}
               disabled={themeLoading}
-            >
-              <ThemedView style={styles.optionContent}>
-                <ThemedText
-                  style={[
-                    styles.optionLabel,
-                    themeMode === option.value && styles.selectedOptionLabel,
-                  ]}
-                >
-                  {option.label}
-                </ThemedText>
-              </ThemedView>
-              {themeMode === option.value && (
-                <IconSymbol
-                  name="checkmark.circle.fill"
-                  size={16}
-                  color={Colors.dark.background}
-                />
-              )}
-            </TouchableOpacity>
+            />
           ))}
+          {themeError && (
+            <ThemedText accessibilityRole="alert">{themeError}</ThemedText>
+          )}
         </ThemedView>
 
         <ThemedView style={styles.section}>
@@ -136,6 +123,16 @@ export default function SettingsScreen() {
                 }
               >
                 Elprisetjustnu.se
+              </ThemedText>
+              .
+            </ThemedText>
+            <ThemedText style={{ marginBlock: 10 }}>
+              Elprisprognos tillhandahålls av{" "}
+              <ThemedText
+                style={styles.link}
+                onPress={() => Linking.openURL("https://wolta.se")}
+              >
+                Wolta.se
               </ThemedText>
               .
             </ThemedText>
@@ -170,32 +167,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     marginBottom: 15,
-  },
-  option: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 18,
-    paddingHorizontal: 16,
-    marginVertical: 6,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: "rgba(123, 123, 123, 0.25)",
-    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
-  },
-  selectedOption: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary,
-  },
-  optionContent: {
-    flex: 1,
-  },
-  optionLabel: {
-    fontSize: 16,
-  },
-  selectedOptionLabel: {
-    color: Colors.primaryAccent,
-    backgroundColor: Colors.primary,
   },
   link: {
     textDecorationStyle: "solid",

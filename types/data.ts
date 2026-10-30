@@ -13,6 +13,15 @@ export type PriceEntry = {
   time_end: string;
 };
 
+export type ForecastPriceEntry = Pick<
+  PriceEntry,
+  "SEK_per_kWh" | "time_start" | "time_end"
+> & {
+  isForecast: true;
+};
+
+export type ChartPriceEntry = PriceEntry | ForecastPriceEntry;
+
 /**
  * Price area identifier (SE1, SE2, SE3, SE4)
  */
